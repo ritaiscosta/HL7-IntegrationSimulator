@@ -44,4 +44,14 @@ public class Events {
     public static List<String> getAvailableEvents() {
         return availableEvents;
     }
+
+    // Method to update the event value
+    public void updateEvent(String oldEvent, String newEvent) {
+        int index = availableEvents.indexOf(oldEvent);
+        if (index != -1) {
+            availableEvents.set(index, newEvent);
+        } else {
+            System.out.println("Event '" + oldEvent + "' not found.");
+        }
+    }
 }

@@ -2,10 +2,13 @@ public class Transitions {
     private States source;
     private States target;
     private String hl7Event;
+    private String simulationName;
 
-    public Transitions(States source, States target) {
+
+    public Transitions(States source, States target, String simulationName) {
         this.source = source;
         this.target = target;
+        this.simulationName = simulationName;
     }
 
     public States getSource() {
@@ -23,4 +26,10 @@ public class Transitions {
     public String getHL7Event() {
         return hl7Event;
     }
+
+    public String getSimulationName() {
+        return simulationName;
+    }
+
+
 }

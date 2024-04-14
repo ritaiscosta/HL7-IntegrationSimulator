@@ -14,4 +14,14 @@ public class States {
     public int getMaxCapacity() {
         return maxCapacity;
     }
+
+    public void setMaxCapacity(int maxCapacity) {
+        this.maxCapacity = maxCapacity;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
 }
