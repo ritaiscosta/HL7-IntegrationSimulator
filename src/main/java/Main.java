@@ -22,6 +22,9 @@ public class Main {
                 case 3:
                     listExistingSimulations();
                     break;
+                case 4:
+                    //StartSimulation();
+                    break;
                 case 0:
                     exitProgram();
                     break;
@@ -36,6 +39,7 @@ public class Main {
         System.out.println("\n1) Create a new simulation");
         System.out.println("2) Modify an existing simulation");
         System.out.println("3) List existing simulations");
+        System.out.println("4) Start Simulation");
         System.out.println("0) Exit");
         System.out.print("\nChoose an option: ");
     }
@@ -347,12 +351,4 @@ public class Main {
         System.exit(0);
     }
 
-    private static States getStateByName(String name, List<States> states) {
-        for (States state : states) {
-            if (state.getName().equals(name)) {
-                return state;
-            }
-        }
-        return null;
-    }
 }

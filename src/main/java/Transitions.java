@@ -27,9 +27,5 @@ public class Transitions {
         return hl7Event;
     }
 
-    public String getSimulationName() {
-        return simulationName;
-    }
-
 
 }
