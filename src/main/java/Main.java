@@ -7,6 +7,17 @@ public class Main {
     private static List<Simulation> simulations = new ArrayList<>();
 
     public static void main(String[] args) {
+
+        // Load previous configuration file, if available
+        String selectedFile = ConfigManager.selectConfigurationFile();
+        Configurations configurations = null;
+        if (selectedFile != null) {
+            configurations = ConfigManager.readFromJson(selectedFile);
+            simulations = configurations.getSimulations();
+            System.out.println("Previous configurations loaded from " + selectedFile);
+        }
+
+
         while (true) {
             displayMenu();
             int choice = scanner.nextInt();
@@ -17,7 +28,7 @@ public class Main {
                     createNewSimulation();
                     break;
                 case 2:
-                    modifyExistingSimulation();
+                    modifyExistingSimulation(configurations, selectedFile);
                     break;
                 case 3:
                     listExistingSimulations();
@@ -44,6 +55,8 @@ public class Main {
         System.out.print("\nChoose an option: ");
     }
 
+
+
     private static void listExistingSimulations() {
         System.out.println("\nEXISTING SIMULATIONS:");
         if (simulations.isEmpty()) {
@@ -57,13 +70,14 @@ public class Main {
             System.out.println("Enter the number of the simulation to view its details:");
             int selection = scanner.nextInt();
             scanner.nextLine(); // Consume newline
+            int stateNumber=1;
 
             if (selection >= 1 && selection <= simulations.size()) {
                 // Display details of the selected simulation
                 Simulation selectedSimulation = simulations.get(selection - 1);
                 System.out.println("\nSimulation Details:");
                 System.out.println("Name: " + selectedSimulation.getName());
-                System.out.println("States:");
+                System.out.println("States:" + stateNumber);
                 for (States state : selectedSimulation.getStates()) {
                     System.out.println(state.getName() + " (Max Capacity: " + state.getMaxCapacity() + ")");
                 }
@@ -202,9 +216,16 @@ public class Main {
             System.out.println(transition.getSource().getName() + " -> " +
                     transition.getTarget().getName() + " (HL7 Message: " + transition.getHL7Event() + ")");
         }
+
+
+            // Save configurations to a JSON file
+            Configurations configurations = new Configurations(simulations);
+            String fileName = "simulation_" + System.currentTimeMillis() + ".json"; // Unique file name using timestamp
+            ConfigManager.writeToJson(configurations, fileName);
+
     }
 
-    private static void modifyExistingSimulation() {
+    private static void modifyExistingSimulation(Configurations configurations, String selectedFile) {
         System.out.println("\nModifying an existing simulation...");
 
         if (simulations.isEmpty()) {
@@ -329,6 +350,8 @@ public class Main {
                 }
 
 
+                ConfigManager.updateJsonFile(configurations, selectedFile);
+
                 System.out.println("\nSimulation modified successfully.");
             } else {
                 System.out.println("\nModification canceled.");
@@ -342,6 +365,10 @@ public class Main {
 
     }
 
+    private static void saveConfigurations() {
+        Configurations configurations = new Configurations(simulations);
+        ConfigManager.writeToJson(configurations, "configurations.json");
+    }
 
     private static void exitProgram() {
         System.out.println("\nClosing Session...");

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Simulation {
@@ -5,6 +6,14 @@ public class Simulation {
     private List<States> states;
     private List<Transitions> transitions;
     private List<String> events;
+
+    // Default constructor for Jackson deserialization
+    public Simulation() {
+        // Initialize lists to avoid NullPointerException during deserialization
+        this.states = new ArrayList<>();
+        this.transitions = new ArrayList<>();
+        this.events = new ArrayList<>();
+    }
 
     public Simulation(String name, List<States> states, List<Transitions> transitions, List<String> events) {
         this.name = name;
