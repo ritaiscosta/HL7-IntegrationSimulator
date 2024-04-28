@@ -15,7 +15,7 @@ public class ConfigManager {
         Date currentDate = new Date();
 
         // Format the date and time to include milliseconds
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 
         // Generate the simulation code using formatted date and time
         return dateFormat.format(currentDate);
@@ -23,17 +23,21 @@ public class ConfigManager {
 
     public static void writeToJson(Configurations configurations, String fileName) {
         try {
-            // Create the "Existing Simulations" folder if it doesn't exist
+            // Check if the file already exists
             File folder = new File("Existing Simulations");
-            if (!folder.exists()) {
-                folder.mkdir();
+            File[] files = folder.listFiles((dir, name) -> name.equals(fileName));
+            if (files != null && files.length > 0) {
+                System.out.println("A configuration file with the same name already exists.");
+                System.out.println("Do you want to overwrite it? (yes/no)");
+                String overwriteChoice = scanner.nextLine().trim().toLowerCase();
+                if (!overwriteChoice.equals("yes")) {
+                    System.out.println("Configurations not saved.");
+                    return;
+                }
             }
-            String simulationCode = generateSimulationCode();
-            System.out.println("Simulation code: " + simulationCode);
-
 
             // Write configurations to a file named simulation_<simulationCode>.json
-            File configFile = new File(folder, "simulation_" + simulationCode + ".json");
+            File configFile = new File(folder, fileName);
             objectMapper.writeValue(configFile, configurations);
             System.out.println("Configurations saved to " + configFile.getPath());
         } catch (IOException e) {

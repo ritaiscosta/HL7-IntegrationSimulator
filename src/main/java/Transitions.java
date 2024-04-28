@@ -5,6 +5,8 @@ public class Transitions {
     private States target;
     private String hl7Event;
     private String simulationName;
+    private double probability; // Probability of transitioning to the target state
+    private int frequency; // Frequency of transitioning to the target state
 
     // Default constructor for Jackson deserialization
     public Transitions() {
@@ -12,15 +14,22 @@ public class Transitions {
         this.target = new States();
         this.hl7Event = "";
         this.simulationName = "";
+
     }
 
     public Transitions(States source, States target, String simulationName) {
         this.source = source;
         this.target = target;
         this.simulationName = simulationName;
+        this.frequency = frequency;
+        this.probability = probability;
     }
 
     public States getSource() {
+        return source;
+    }
+
+    public States setSource(States newSourceState){
         return source;
     }
 
@@ -28,9 +37,32 @@ public class Transitions {
         return target;
     }
 
+    public States setTarget(States newTargetState){
+        return target;
+    }
+
+    public double getProbability() {
+        return probability;
+    }
+
+    public int getFrequency() {
+        return frequency;
+    }
+
+    public void setProbability(double probability) {
+        this.probability = probability;
+    }
+
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
+    }
+
+
+
     public void setHL7Event(String hl7Event) {
         this.hl7Event = hl7Event;
     }
+
 
     public String getHL7Event() {
         return hl7Event;
