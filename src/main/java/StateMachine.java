@@ -10,14 +10,23 @@ public class StateMachine {
         this.simulation = simulation;
         this.scanner = scanner;
         this.stateQueues = new HashMap<>();
-        for (State state : simulation.getStates()) {
+
+        // Initialize queues for all states in the simulation, including start and end states
+        Set<State> uniqueStates = new HashSet<>(simulation.getStates());
+        uniqueStates.add(simulation.getStartState());
+        uniqueStates.add(simulation.getEndState());
+
+        for (State state : uniqueStates) {
             stateQueues.put(state, new LinkedList<>());
         }
 
-        // Initialize people in the start state
-        State startState = simulation.getStartState();
-        for (int i = 0; i < startState.getMaxCapacity(); i++) {
-            stateQueues.get(startState).add(new Person("Person_" + Person.getIdCounter()));
+        // Debug: Print all initialized state queues
+        System.out.println("State queues initialized for states: " + stateQueues.keySet().stream().map(State::getName).collect(Collectors.joining(", ")));
+
+        // Initialize people in the start state based on the start transition
+        Transition startTransition = findStartTransition();
+        if (startTransition != null) {
+            executeStartTransition(startTransition);
         }
     }
 
@@ -35,6 +44,36 @@ public class StateMachine {
         }
 
         System.out.println("All people have reached the end state.");
+    }
+
+    private Transition findStartTransition() {
+        for (Transition transition : simulation.getTransitions()) {
+            if (transition.getSource() == null) {
+                return transition;
+            }
+        }
+        return null;
+    }
+
+    private void executeStartTransition(Transition transition) {
+        State target = transition.getTarget();
+        Queue<Person> targetQueue = stateQueues.get(target);
+
+        // Debug: Check target state and queue
+        System.out.println("Executing start transition to state: " + target.getName());
+
+        if (targetQueue == null) {
+            throw new NullPointerException("Target queue for state " + target.getName() + " is not initialized.");
+        }
+
+        int peopleToMove = Math.min(transition.getFrequency(), target.getMaxCapacity() - targetQueue.size());
+        for (int i = 0; i < peopleToMove; i++) {
+            if (Math.random() <= transition.getProbability()) {
+                Person newPerson = new Person("Person_" + Person.getIdCounter());
+                targetQueue.add(newPerson);
+                System.out.println(newPerson + " entered the simulation at " + target.getName() + " with event " + transition.getHL7Event());
+            }
+        }
     }
 
     private boolean allPeopleInEndState() {

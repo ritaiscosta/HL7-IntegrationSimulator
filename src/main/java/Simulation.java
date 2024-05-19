@@ -1,3 +1,5 @@
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class Simulation {
@@ -8,12 +10,14 @@ public class Simulation {
     private State startState;
     private State endState;
 
-    // Default constructor needed for Jackson
-    public Simulation() {
-    }
-
-    // Constructor with parameters
-    public Simulation(String name, List<State> states, List<Transition> transitions, List<String> events, State startState, State endState) {
+    @JsonCreator
+    public Simulation(
+            @JsonProperty("name") String name,
+            @JsonProperty("states") List<State> states,
+            @JsonProperty("transitions") List<Transition> transitions,
+            @JsonProperty("events") List<String> events,
+            @JsonProperty("startState") State startState,
+            @JsonProperty("endState") State endState) {
         this.name = name;
         this.states = states;
         this.transitions = transitions;
@@ -22,7 +26,6 @@ public class Simulation {
         this.endState = endState;
     }
 
-    // Getters and setters for all properties
     public String getName() {
         return name;
     }

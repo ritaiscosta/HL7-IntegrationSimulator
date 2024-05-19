@@ -1,12 +1,12 @@
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class Configuration {
     private List<Simulation> simulations;
 
-    public Configuration() {
-    }
-
-    public Configuration(List<Simulation> simulations) {
+    @JsonCreator
+    public Configuration(@JsonProperty("simulations") List<Simulation> simulations) {
         this.simulations = simulations;
     }
 

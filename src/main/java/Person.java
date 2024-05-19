@@ -1,27 +1,17 @@
 public class Person {
-    private static int idCounter = 1; // Static counter to generate unique IDs
-    private int id;
-    private String name;
+    private static int idCounter = 0;
+    private String id;
 
-    public Person(String name) {
-        this.id = idCounter++;
-        this.name = name;
+    public Person(String id) {
+        this.id = id;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public static int getIdCounter() {
-        return idCounter;
+    public static synchronized int getIdCounter() {
+        return idCounter++;
     }
 
     @Override
     public String toString() {
-        return name + " (ID: " + id + ")";
+        return id;
     }
 }
