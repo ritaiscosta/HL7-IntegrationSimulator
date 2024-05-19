@@ -120,7 +120,32 @@ public class Main {
         scanner.nextLine(); // Consume newline
         State endState = states.get(endStateIndex);
 
-        // Prompt the user to enter transitions
+        // Configure special transitions for start and end states
+        System.out.println("\nCONFIGURING SPECIAL TRANSITIONS FOR START AND END STATES");
+
+        // Start state transition
+        System.out.print("Enter frequency for the start state transition: ");
+        int startFrequency = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter probability for the start state transition (0-1): ");
+        double startProbability = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+
+        Transition startTransition = new Transition(null, startState, "Start Simulation", simulationName, startProbability, startFrequency);
+        transitions.add(startTransition);
+
+        // End state transition
+        System.out.print("Enter frequency for the end state transition: ");
+        int endFrequency = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter probability for the end state transition (0-1): ");
+        double endProbability = scanner.nextDouble();
+        scanner.nextLine(); // Consume newline
+
+        Transition endTransition = new Transition(endState, null, "End Simulation", simulationName, endProbability, endFrequency);
+        transitions.add(endTransition);
+
+        // Prompt the user to enter regular transitions
         System.out.println("\nCREATING TRANSITIONS for Simulation: " + simulationName);
         System.out.println("\nEnter transitions. Enter empty source and target names to finish.");
 
@@ -278,7 +303,7 @@ public class Main {
 
         // Display existing simulation names
         System.out.println("\nEXISTING SIMULATION CONFIGURATION:");
-        for (int i = 0; i < simulations.size(); i++) {
+        for (int i = 0; simulations.size() > i; i++) {
             Simulation simulation = simulations.get(i);
             System.out.println((i + 1) + ") " + simulation.getName());
         }
@@ -377,101 +402,156 @@ public class Main {
                     }
                 }
 
-                // Modify transitions
-                List<Transition> transitions = selectedSimulation.getTransitions();
-                System.out.println("Modify transitions:");
-                for (Transition transition : transitions) {
-                    System.out.println("\nTransition from " + transition.getSource().getName() + " to " + transition.getTarget().getName());
+                // Modify special transitions for start and end states
+                System.out.println("Modify special transitions for start and end states:");
 
-                    // Prompt the user to modify the source and target states
-                    System.out.print("Do you want to modify the source and target states for this transition? (yes/no): ");
-                    String modifyStatesInput = scanner.nextLine().trim();
-                    if (modifyStatesInput.equalsIgnoreCase("yes")) {
-                        // Display available states for selection
-                        System.out.println("Available States:");
-                        for (int i = 0; i < selectedSimulation.getStates().size(); i++) {
-                            State state = selectedSimulation.getStates().get(i);
-                            System.out.println((i + 1) + ") " + state.getName());
-                        }
+                // Start state transition
+                Transition startTransition = selectedSimulation.getTransitions().stream()
+                        .filter(t -> t.getSource() == null && t.getTarget().equals(selectedSimulation.getStartState()))
+                        .findFirst().orElse(null);
 
-                        // Prompt the user to select the source state
-                        System.out.print("Enter the number of the new source state for this transition (current: " + transition.getSource().getName() + "): ");
-                        String newSourceStateInput = scanner.nextLine().trim();
-                        if (!newSourceStateInput.isEmpty()) {
-                            int newSourceStateNumber = Integer.parseInt(newSourceStateInput);
-                            if (newSourceStateNumber >= 1 && newSourceStateNumber <= selectedSimulation.getStates().size()) {
-                                // Get the selected source state
-                                State newSourceState = selectedSimulation.getStates().get(newSourceStateNumber - 1);
-                                transition.setSource(newSourceState);
-                            } else {
-                                System.out.println("Invalid source state number. The current source state will be kept.");
-                            }
-                        }
-
-                        // Prompt the user to select the target state
-                        System.out.print("Enter the number of the new target state for this transition (current: " + transition.getTarget().getName() + "): ");
-                        String newTargetStateInput = scanner.nextLine().trim();
-                        if (!newTargetStateInput.isEmpty()) {
-                            int newTargetStateNumber = Integer.parseInt(newTargetStateInput);
-                            if (newTargetStateNumber >= 1 && newTargetStateNumber <= selectedSimulation.getStates().size()) {
-                                // Get the selected target state
-                                State newTargetState = selectedSimulation.getStates().get(newTargetStateNumber - 1);
-                                transition.setTarget(newTargetState);
-                            } else {
-                                System.out.println("Invalid target state number. The current target state will be kept.");
-                            }
-                        }
+                if (startTransition != null) {
+                    System.out.print("Enter new frequency for the start state transition (current: " + startTransition.getFrequency() + "): ");
+                    String newStartFrequencyInput = scanner.nextLine().trim();
+                    if (!newStartFrequencyInput.isEmpty()) {
+                        int newStartFrequency = Integer.parseInt(newStartFrequencyInput);
+                        startTransition.setFrequency(newStartFrequency);
                     }
 
-                    // Prompt the user to modify the HL7 event
-                    System.out.print("Do you want to modify the HL7 event for this transition? (yes/no): ");
-                    String modifyEventInput = scanner.nextLine().trim();
-                    if (modifyEventInput.equalsIgnoreCase("yes")) {
-                        // Display available events for selection
-                        List<String> availableEvents = Event.getAvailableEvents();
-                        System.out.println("Available HL7 Events:");
-                        for (int i = 0; i < availableEvents.size(); i++) {
-                            System.out.println((i + 1) + ") " + availableEvents.get(i));
-                        }
-
-                        // Prompt the user to select an event
-                        System.out.print("Enter the number of the HL7 event to associate with this transition: ");
-                        int eventNumber = scanner.nextInt();
-                        scanner.nextLine(); // Consume newline
-
-                        // Validate the user's input
-                        if (eventNumber >= 1 && eventNumber <= availableEvents.size()) {
-                            // Get the selected event
-                            String selectedEvent = availableEvents.get(eventNumber - 1);
-
-                            // Set the selected event for the transition
-                            transition.setHL7Event(selectedEvent);
-                        } else {
-                            System.out.println("Invalid event number. The current event will be kept.");
-                        }
-                    }
-
-                    // Prompt the user to modify the probability
-                    System.out.print("Enter new probability for this transition (0-1) (current: " + transition.getProbability() + "): ");
-                    String newProbabilityInput = scanner.nextLine().trim();
-                    if (!newProbabilityInput.isEmpty()) {
-                        double newProbability = Double.parseDouble(newProbabilityInput);
-                        if (newProbability >= 0 && newProbability <= 1) {
-                            transition.setProbability(newProbability);
+                    System.out.print("Enter new probability for the start state transition (0-1) (current: " + startTransition.getProbability() + "): ");
+                    String newStartProbabilityInput = scanner.nextLine().trim();
+                    if (!newStartProbabilityInput.isEmpty()) {
+                        double newStartProbability = Double.parseDouble(newStartProbabilityInput);
+                        if (newStartProbability >= 0 && newStartProbability <= 1) {
+                            startTransition.setProbability(newStartProbability);
                         } else {
                             System.out.println("Invalid input. Probability must be a number between 0 and 1.");
                         }
                     }
+                }
 
-                    // Prompt the user to modify the frequency
-                    System.out.print("Enter new frequency for this transition (positive number) (current: " + transition.getFrequency() + "): ");
-                    String newFrequencyInput = scanner.nextLine().trim();
-                    if (!newFrequencyInput.isEmpty()) {
-                        int newFrequency = Integer.parseInt(newFrequencyInput);
-                        if (newFrequency > 0) {
-                            transition.setFrequency(newFrequency);
+                // End state transition
+                Transition endTransition = selectedSimulation.getTransitions().stream()
+                        .filter(t -> t.getTarget() == null && t.getSource().equals(selectedSimulation.getEndState()))
+                        .findFirst().orElse(null);
+
+                if (endTransition != null) {
+                    System.out.print("Enter new frequency for the end state transition (current: " + endTransition.getFrequency() + "): ");
+                    String newEndFrequencyInput = scanner.nextLine().trim();
+                    if (!newEndFrequencyInput.isEmpty()) {
+                        int newEndFrequency = Integer.parseInt(newEndFrequencyInput);
+                        endTransition.setFrequency(newEndFrequency);
+                    }
+
+                    System.out.print("Enter new probability for the end state transition (0-1) (current: " + endTransition.getProbability() + "): ");
+                    String newEndProbabilityInput = scanner.nextLine().trim();
+                    if (!newEndProbabilityInput.isEmpty()) {
+                        double newEndProbability = Double.parseDouble(newEndProbabilityInput);
+                        if (newEndProbability >= 0 && newEndProbability <= 1) {
+                            endTransition.setProbability(newEndProbability);
                         } else {
-                            System.out.println("Invalid input. Frequency must be a positive number.");
+                            System.out.println("Invalid input. Probability must be a number between 0 and 1.");
+                        }
+                    }
+                }
+
+                // Modify regular transitions
+                List<Transition> transitions = selectedSimulation.getTransitions();
+                System.out.println("Modify regular transitions:");
+                for (Transition transition : transitions) {
+                    if (transition.getSource() != null && transition.getTarget() != null) {
+                        System.out.println("\nTransition from " + transition.getSource().getName() + " to " + transition.getTarget().getName());
+
+                        // Prompt the user to modify the source and target states
+                        System.out.print("Do you want to modify the source and target states for this transition? (yes/no): ");
+                        String modifyStatesInput = scanner.nextLine().trim();
+                        if (modifyStatesInput.equalsIgnoreCase("yes")) {
+                            // Display available states for selection
+                            System.out.println("Available States:");
+                            for (int i = 0; i < selectedSimulation.getStates().size(); i++) {
+                                State state = selectedSimulation.getStates().get(i);
+                                System.out.println((i + 1) + ") " + state.getName());
+                            }
+
+                            // Prompt the user to select the source state
+                            System.out.print("Enter the number of the new source state for this transition (current: " + transition.getSource().getName() + "): ");
+                            String newSourceStateInput = scanner.nextLine().trim();
+                            if (!newSourceStateInput.isEmpty()) {
+                                int newSourceStateNumber = Integer.parseInt(newSourceStateInput);
+                                if (newSourceStateNumber >= 1 && newSourceStateNumber <= selectedSimulation.getStates().size()) {
+                                    // Get the selected source state
+                                    State newSourceState = selectedSimulation.getStates().get(newSourceStateNumber - 1);
+                                    transition.setSource(newSourceState);
+                                } else {
+                                    System.out.println("Invalid source state number. The current source state will be kept.");
+                                }
+                            }
+
+                            // Prompt the user to select the target state
+                            System.out.print("Enter the number of the new target state for this transition (current: " + transition.getTarget().getName() + "): ");
+                            String newTargetStateInput = scanner.nextLine().trim();
+                            if (!newTargetStateInput.isEmpty()) {
+                                int newTargetStateNumber = Integer.parseInt(newTargetStateInput);
+                                if (newTargetStateNumber >= 1 && newTargetStateNumber <= selectedSimulation.getStates().size()) {
+                                    // Get the selected target state
+                                    State newTargetState = selectedSimulation.getStates().get(newTargetStateNumber - 1);
+                                    transition.setTarget(newTargetState);
+                                } else {
+                                    System.out.println("Invalid target state number. The current target state will be kept.");
+                                }
+                            }
+                        }
+
+                        // Prompt the user to modify the HL7 event
+                        System.out.print("Do you want to modify the HL7 event for this transition? (yes/no): ");
+                        String modifyEventInput = scanner.nextLine().trim();
+                        if (modifyEventInput.equalsIgnoreCase("yes")) {
+                            // Display available events for selection
+                            List<String> availableEvents = Event.getAvailableEvents();
+                            System.out.println("Available HL7 Events:");
+                            for (int i = 0; i < availableEvents.size(); i++) {
+                                System.out.println((i + 1) + ") " + availableEvents.get(i));
+                            }
+
+                            // Prompt the user to select an event
+                            System.out.print("Enter the number of the HL7 event to associate with this transition: ");
+                            int eventNumber = scanner.nextInt();
+                            scanner.nextLine(); // Consume newline
+
+                            // Validate the user's input
+                            if (eventNumber >= 1 && eventNumber <= availableEvents.size()) {
+                                // Get the selected event
+                                String selectedEvent = availableEvents.get(eventNumber - 1);
+
+                                // Set the selected event for the transition
+                                transition.setHL7Event(selectedEvent);
+                            } else {
+                                System.out.println("Invalid event number. The current event will be kept.");
+                            }
+                        }
+
+                        // Prompt the user to modify the probability
+                        System.out.print("Enter new probability for this transition (0-1) (current: " + transition.getProbability() + "): ");
+                        String newProbabilityInput = scanner.nextLine().trim();
+                        if (!newProbabilityInput.isEmpty()) {
+                            double newProbability = Double.parseDouble(newProbabilityInput);
+                            if (newProbability >= 0 && newProbability <= 1) {
+                                transition.setProbability(newProbability);
+                            } else {
+                                System.out.println("Invalid input. Probability must be a number between 0 and 1.");
+                            }
+                        }
+
+                        // Prompt the user to modify the frequency
+                        System.out.print("Enter new frequency for this transition (positive number) (current: " + transition.getFrequency() + "): ");
+                        String newFrequencyInput = scanner.nextLine().trim();
+                        if (!newFrequencyInput.isEmpty()) {
+                            int newFrequency = Integer.parseInt(newFrequencyInput);
+                            if (newFrequency > 0) {
+                                transition.setFrequency(newFrequency);
+                            } else {
+                                System.out.println("Invalid input. Frequency must be a positive number.");
+                            }
                         }
                     }
                 }
@@ -487,10 +567,10 @@ public class Main {
                 System.out.println("\nEnd State: " + selectedSimulation.getEndState().getName());
                 System.out.println("\nTransitions:");
                 for (Transition transition : selectedSimulation.getTransitions()) {
-                    System.out.println(transition.getSource().getName() + " -> " +
-                            transition.getTarget().getName() + " (HL7 Message: " + transition.getHL7Event() + ")");
-                    System.out.println("Frequency (" + transition.getSource().getName() + " to " + transition.getTarget().getName() + "): " + transition.getFrequency());
-                    System.out.println("Probability (" + transition.getSource().getName() + " to " + transition.getTarget().getName() + "): " + transition.getProbability() + "\n");
+                    System.out.println(transition.getSource() + " -> " +
+                            transition.getTarget() + " (HL7 Message: " + transition.getHL7Event() + ")");
+                    System.out.println("Frequency (" + transition.getSource() + " to " + transition.getTarget() + "): " + transition.getFrequency());
+                    System.out.println("Probability (" + transition.getSource() + " to " + transition.getTarget() + "): " + transition.getProbability() + "\n");
                 }
 
                 // Update JSON files
@@ -525,6 +605,7 @@ public class Main {
                 System.out.print("Enter the number of the configuration to view its details (or 0 to return to the main menu): ");
                 int selection = scanner.nextInt();
                 scanner.nextLine(); // Consume newline
+                int stateNumber = 1;
 
                 if (selection == 0) {
                     return;
@@ -533,14 +614,13 @@ public class Main {
                     Simulation selectedSimulation = simulations.get(selection - 1);
                     System.out.println("\nSimulation Details:");
                     System.out.println("Name: " + selectedSimulation.getName());
-                    System.out.println("\nStates:");
-                    for (int i = 0; i < selectedSimulation.getStates().size(); i++) {
-                        State state = selectedSimulation.getStates().get(i);
-                        System.out.println((i + 1) + ") " + state.getName() + " (Max Capacity: " + state.getMaxCapacity() + ")");
+                    System.out.println("States:" + stateNumber);
+                    for (State state : selectedSimulation.getStates()) {
+                        System.out.println(state.getName() + " (Max Capacity: " + state.getMaxCapacity() + ")");
                     }
-                    System.out.println("\nStart State: " + selectedSimulation.getStartState().getName());
-                    System.out.println("\nEnd State: " + selectedSimulation.getEndState().getName());
-                    System.out.println("\nTransitions:");
+                    System.out.println("Start State: " + selectedSimulation.getStartState().getName());
+                    System.out.println("End State: " + selectedSimulation.getEndState().getName());
+                    System.out.println("Transitions:");
                     for (Transition transition : selectedSimulation.getTransitions()) {
                         System.out.println(transition.getSource().getName() + " -> " +
                                 transition.getTarget().getName() + " (HL7 Message: " + transition.getHL7Event() + ")");
@@ -592,7 +672,7 @@ public class Main {
     }
 
     private static void runStateMachine(Simulation simulation) {
-        StateMachine stateMachine = new StateMachine(simulation);
+        StateMachine stateMachine = new StateMachine(simulation, scanner);
         stateMachine.run();
     }
 

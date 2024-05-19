@@ -1,54 +1,127 @@
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class StateMachine {
     private Simulation simulation;
-    private State currentState;
+    private Map<State, Queue<Person>> stateQueues;
+    private Scanner scanner;
 
-    public StateMachine(Simulation simulation) {
+    public StateMachine(Simulation simulation, Scanner scanner) {
         this.simulation = simulation;
-        this.currentState = simulation.getStartState();
+        this.scanner = scanner;
+        this.stateQueues = new HashMap<>();
+        for (State state : simulation.getStates()) {
+            stateQueues.put(state, new LinkedList<>());
+        }
+
+        // Initialize people in the start state
+        State startState = simulation.getStartState();
+        for (int i = 0; i < startState.getMaxCapacity(); i++) {
+            stateQueues.get(startState).add(new Person("Person_" + Person.getIdCounter()));
+        }
     }
 
     public void run() {
         System.out.println("Starting state machine for simulation: " + simulation.getName());
-        System.out.println("Initial State: " + currentState.getName());
+        printStateQueues();
 
-        while (currentState != null && !currentState.equals(simulation.getEndState())) {
+        while (!allPeopleInEndState()) {
             List<Transition> possibleTransitions = getPossibleTransitions();
-            if (possibleTransitions.isEmpty()) {
-                System.out.println("No possible transitions from state: " + currentState.getName());
-                break;
-            }
-
-            Transition transition = selectTransition(possibleTransitions);
-            if (transition != null) {
+            for (Transition transition : possibleTransitions) {
                 executeTransition(transition);
-            } else {
-                System.out.println("No valid transition found. Stopping simulation.");
-                break;
             }
+            printStateQueues();
+            promptToContinue();
         }
 
-        if (currentState.equals(simulation.getEndState())) {
-            System.out.println("Reached the end state: " + currentState.getName());
+        System.out.println("All people have reached the end state.");
+    }
+
+    private boolean allPeopleInEndState() {
+        for (State state : simulation.getStates()) {
+            if (!state.equals(simulation.getEndState()) && !stateQueues.get(state).isEmpty()) {
+                return false;
+            }
         }
+        return true;
     }
 
     private List<Transition> getPossibleTransitions() {
-        return simulation.getTransitions().stream()
-                .filter(t -> t.getSource().equals(currentState))
-                .toList();
-    }
+        List<Transition> possibleTransitions = new ArrayList<>();
 
-    private Transition selectTransition(List<Transition> transitions) {
-        // For simplicity, we'll just select the first transition.
-        // You can add more complex logic for selecting transitions here.
-        return transitions.isEmpty() ? null : transitions.get(0);
+        for (Transition transition : simulation.getTransitions()) {
+            if (transition.getSource() == null && stateQueues.get(transition.getTarget()).size() < transition.getTarget().getMaxCapacity()) {
+                possibleTransitions.add(transition);
+            } else if (transition.getSource() != null && !stateQueues.get(transition.getSource()).isEmpty()) {
+                possibleTransitions.add(transition);
+            }
+        }
+
+        return possibleTransitions;
     }
 
     private void executeTransition(Transition transition) {
-        System.out.println("Transitioning from " + transition.getSource().getName() + " to " + transition.getTarget().getName() +
-                " with HL7 event " + transition.getHL7Event());
-        currentState = transition.getTarget();
+        State source = transition.getSource();
+        State target = transition.getTarget();
+
+        if (source == null) {
+            // Handle special start state transition
+            Queue<Person> targetQueue = stateQueues.get(target);
+
+            int peopleToMove = Math.min(transition.getFrequency(), target.getMaxCapacity() - targetQueue.size());
+            for (int i = 0; i < peopleToMove; i++) {
+                if (Math.random() <= transition.getProbability()) {
+                    Person newPerson = new Person("Person_" + Person.getIdCounter());
+                    targetQueue.add(newPerson);
+                    System.out.println(newPerson + " entered the simulation at " + target.getName() + " with event " + transition.getHL7Event());
+                }
+            }
+        } else if (target == null) {
+            // Handle special end state transition
+            Queue<Person> sourceQueue = stateQueues.get(source);
+
+            int peopleToMove = Math.min(sourceQueue.size(), transition.getFrequency());
+            for (int i = 0; i < peopleToMove; i++) {
+                Person person = sourceQueue.poll();
+                if (Math.random() <= transition.getProbability()) {
+                    System.out.println(person + " exited the simulation from " + source.getName() + " with event " + transition.getHL7Event());
+                } else {
+                    sourceQueue.add(person); // Re-add person to source queue if transition didn't happen
+                }
+            }
+        } else {
+            // Handle regular transition
+            Queue<Person> sourceQueue = stateQueues.get(source);
+            Queue<Person> targetQueue = stateQueues.get(target);
+
+            int peopleToMove = Math.min(sourceQueue.size(), transition.getFrequency());
+            for (int i = 0; i < peopleToMove; i++) {
+                Person person = sourceQueue.poll();
+                if (Math.random() <= transition.getProbability()) {
+                    if (targetQueue.size() < target.getMaxCapacity()) {
+                        targetQueue.add(person);
+                        System.out.println(person + " moved from " + source.getName() + " to " + target.getName() + " with event " + transition.getHL7Event());
+                    } else {
+                        sourceQueue.add(person); // Re-add person to source queue if target is full
+                        System.out.println(person + " could not move from " + source.getName() + " to " + target.getName() + " because " + target.getName() + " is full");
+                    }
+                } else {
+                    sourceQueue.add(person); // Re-add person to source queue if transition didn't happen
+                }
+            }
+        }
+    }
+
+    private void printStateQueues() {
+        System.out.println("Current state of the simulation:");
+        for (State state : simulation.getStates()) {
+            System.out.println(state.getName() + ": " + stateQueues.get(state).stream().map(Person::toString).collect(Collectors.joining(", ")));
+        }
+        System.out.println();
+    }
+
+    private void promptToContinue() {
+        System.out.print("Press Enter to continue...");
+        scanner.nextLine();
     }
 }
