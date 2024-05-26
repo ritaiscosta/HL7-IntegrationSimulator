@@ -5,6 +5,7 @@ public class StateMachine {
     private Simulation simulation;
     private Map<State, Queue<Person>> stateQueues;
     private Scanner scanner;
+    private HL7messageGenerator hl7messageGenerator = new HL7messageGenerator(); // Initialize HL7 message generator
 
     public StateMachine(Simulation simulation, Scanner scanner) {
         this.simulation = simulation;
@@ -21,7 +22,8 @@ public class StateMachine {
         }
 
         // Debug: Print all initialized state queues
-        System.out.println("State queues initialized for states: " + stateQueues.keySet().stream().map(State::getName).collect(Collectors.joining(", ")));
+        System.out.println("\nStarting state machine for simulation: " + simulation.getName());
+        System.out.println("\nState queues initialized for states: " + stateQueues.keySet().stream().map(State::getName).collect(Collectors.joining(", ")));
 
         // Initialize people in the start state based on the start transition
         Transition startTransition = findStartTransition();
@@ -31,7 +33,7 @@ public class StateMachine {
     }
 
     public void run() {
-        System.out.println("Starting state machine for simulation: " + simulation.getName());
+
         printStateQueues();
 
         while (!allPeopleInEndState()) {
@@ -43,7 +45,7 @@ public class StateMachine {
             promptToContinue();
         }
 
-        System.out.println("All people have reached the end state.");
+        System.out.println("\nAll people have reached the end state.");
     }
 
     private Transition findStartTransition() {
@@ -57,46 +59,30 @@ public class StateMachine {
 
     private void executeStartTransition(Transition transition) {
         State target = transition.getTarget();
+        if (target == null) {
+            System.out.println("\nError: Target state is null in executeStartTransition.");
+            return;
+        }
         Queue<Person> targetQueue = stateQueues.get(target);
 
-        // Debug: Check target state and queue
-        System.out.println("Executing start transition to state: " + target.getName());
+        // Create person information
+        String firstName = PersonInfo.generateRandomFirstName();
+        String lastName = PersonInfo.generateRandomLastName();
+        String id = PersonInfo.generatePatientInternalID();
+        PersonInfo personInfo = new PersonInfo(firstName, lastName, id);
 
-        if (targetQueue == null) {
-            throw new NullPointerException("Target queue for state " + target.getName() + " is not initialized.");
+        // Generate HL7 message
+        String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+
+        Person person = new Person(firstName + " " + lastName);
+        targetQueue.add(person);
+        System.out.println("\n" + person + " entered the simulation");
+        if (transition.getHL7Event() != null) {
+            System.out.println("\nEvent: " + transition.getHL7Event());
+        } else {
+            System.out.println("NO EVENT");
         }
-
-        int peopleToMove = Math.min(transition.getFrequency(), target.getMaxCapacity() - targetQueue.size());
-        for (int i = 0; i < peopleToMove; i++) {
-            if (Math.random() <= transition.getProbability()) {
-                Person newPerson = new Person("Person_" + Person.getIdCounter());
-                targetQueue.add(newPerson);
-                System.out.println(newPerson + " entered the simulation at " + target.getName() + " with event " + transition.getHL7Event());
-            }
-        }
-    }
-
-    private boolean allPeopleInEndState() {
-        for (State state : simulation.getStates()) {
-            if (!state.equals(simulation.getEndState()) && !stateQueues.get(state).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private List<Transition> getPossibleTransitions() {
-        List<Transition> possibleTransitions = new ArrayList<>();
-
-        for (Transition transition : simulation.getTransitions()) {
-            if (transition.getSource() == null && stateQueues.get(transition.getTarget()).size() < transition.getTarget().getMaxCapacity()) {
-                possibleTransitions.add(transition);
-            } else if (transition.getSource() != null && !stateQueues.get(transition.getSource()).isEmpty()) {
-                possibleTransitions.add(transition);
-            }
-        }
-
-        return possibleTransitions;
+        System.out.println(hl7Message);
     }
 
     private void executeTransition(Transition transition) {
@@ -104,34 +90,22 @@ public class StateMachine {
         State target = transition.getTarget();
 
         if (source == null) {
-            // Handle special start state transition
-            Queue<Person> targetQueue = stateQueues.get(target);
-
-            int peopleToMove = Math.min(transition.getFrequency(), target.getMaxCapacity() - targetQueue.size());
-            for (int i = 0; i < peopleToMove; i++) {
-                if (Math.random() <= transition.getProbability()) {
-                    Person newPerson = new Person("Person_" + Person.getIdCounter());
-                    targetQueue.add(newPerson);
-                    System.out.println(newPerson + " entered the simulation at " + target.getName() + " with event " + transition.getHL7Event());
-                }
-            }
-        } else if (target == null) {
-            // Handle special end state transition
-            Queue<Person> sourceQueue = stateQueues.get(source);
-
-            int peopleToMove = Math.min(sourceQueue.size(), transition.getFrequency());
-            for (int i = 0; i < peopleToMove; i++) {
-                Person person = sourceQueue.poll();
-                if (Math.random() <= transition.getProbability()) {
-                    System.out.println(person + " exited the simulation from " + source.getName() + " with event " + transition.getHL7Event());
-                } else {
-                    sourceQueue.add(person); // Re-add person to source queue if transition didn't happen
-                }
-            }
+            executeStartTransition(transition);
         } else {
-            // Handle regular transition
             Queue<Person> sourceQueue = stateQueues.get(source);
             Queue<Person> targetQueue = stateQueues.get(target);
+
+            if (target == null) {
+                System.out.println("\n Error: Target state is null for transition from " + source.getName());
+                return;
+            }
+
+            // Ensure the target queue is initialized
+            if (targetQueue == null) {
+                targetQueue = new LinkedList<>();
+                stateQueues.put(target, targetQueue);
+                System.out.println("\nInitialized target queue for state: " + target.getName());
+            }
 
             int peopleToMove = Math.min(sourceQueue.size(), transition.getFrequency());
             for (int i = 0; i < peopleToMove; i++) {
@@ -139,10 +113,18 @@ public class StateMachine {
                 if (Math.random() <= transition.getProbability()) {
                     if (targetQueue.size() < target.getMaxCapacity()) {
                         targetQueue.add(person);
-                        System.out.println(person + " moved from " + source.getName() + " to " + target.getName() + " with event " + transition.getHL7Event());
+                        System.out.println("\n" + person + " moved from " + source.getName() + " to " + target.getName() + " with event " + transition.getHL7Event());
+                        PersonInfo personInfo = new PersonInfo(person.toString().split(" ")[0], person.toString().split(" ")[1], PersonInfo.generatePatientInternalID()); // Adjust as necessary
+                        String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+                        if (transition.getHL7Event() != null) {
+                            System.out.println("Event: " + transition.getHL7Event());
+                        } else {
+                            System.out.println("NO EVENT");
+                        }
+                        System.out.println("\n HL7 Message: " + hl7Message);
                     } else {
                         sourceQueue.add(person); // Re-add person to source queue if target is full
-                        System.out.println(person + " could not move from " + source.getName() + " to " + target.getName() + " because " + target.getName() + " is full");
+                        System.out.println("\n" + person + " could not move from " + source.getName() + " to " + target.getName() + " because " + target.getName() + " is full");
                     }
                 } else {
                     sourceQueue.add(person); // Re-add person to source queue if transition didn't happen
@@ -152,7 +134,7 @@ public class StateMachine {
     }
 
     private void printStateQueues() {
-        System.out.println("Current state of the simulation:");
+        System.out.println("\nCurrent state of the simulation:");
         for (State state : simulation.getStates()) {
             System.out.println(state.getName() + ": " + stateQueues.get(state).stream().map(Person::toString).collect(Collectors.joining(", ")));
         }
@@ -160,7 +142,23 @@ public class StateMachine {
     }
 
     private void promptToContinue() {
-        System.out.print("Press Enter to continue...");
+        System.out.print("\nPress Enter to continue...");
         scanner.nextLine();
+    }
+
+    private boolean allPeopleInEndState() {
+        State endState = simulation.getEndState();
+        return stateQueues.get(endState).size() == stateQueues.values().stream().mapToInt(Queue::size).sum();
+    }
+
+    private List<Transition> getPossibleTransitions() {
+        List<Transition> possibleTransitions = new ArrayList<>();
+        for (Transition transition : simulation.getTransitions()) {
+            State source = transition.getSource();
+            if (source == null || (stateQueues.containsKey(source) && !stateQueues.get(source).isEmpty())) {
+                possibleTransitions.add(transition);
+            }
+        }
+        return possibleTransitions;
     }
 }
