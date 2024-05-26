@@ -72,8 +72,4 @@ public class Transition {
     public void setFrequency(int frequency) {
         this.frequency = frequency;
     }
-
-    public boolean hasEvent() {
-        return hl7Event != null && !hl7Event.isEmpty();
-    }
 }

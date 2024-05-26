@@ -1,3 +1,4 @@
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,21 +77,21 @@ public class StateMachine {
         String id = PersonInfo.generatePatientInternalID();
         PersonInfo personInfo = new PersonInfo(firstName, lastName, id);
 
-        // Generate HL7 message
-        String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
-
         // Using the constructor with three parameters: firstName, lastName, id
         Person person = new Person(firstName, lastName, id);
         targetQueue.add(person);
         System.out.println("\n" + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") entered the simulation");
-        if (transition.getHL7Event() != null) {
-            System.out.println("\nEvent: " + transition.getHL7Event());
+
+        String hl7Event = transition.getHL7Event();
+        if (hl7Event != null) {
+            String cleanedEvent = cleanEventString(hl7Event);
+            String hl7Message = generateHL7Message(cleanedEvent, personInfo);
+            System.out.println("\nEvent: " + hl7Event);
             System.out.println(hl7Message);
             System.out.println("\n");
         } else {
             System.out.println("\nNO EVENT");
         }
-        System.out.println(hl7Message);
     }
 
     private void executeTransition(Transition transition) {
@@ -108,17 +109,24 @@ public class StateMachine {
                 String firstName = PersonInfo.generateRandomFirstName();
                 String lastName = PersonInfo.generateRandomLastName();
                 String id = PersonInfo.generatePatientInternalID();
+                PersonInfo personInfo = new PersonInfo(firstName, lastName, id);
+
                 // Using the constructor with three parameters: firstName, lastName, id
                 Person newPerson = new Person(firstName, lastName, id);
                 targetQueue.add(newPerson);
                 System.out.println("\nAdded " + newPerson.getFirstName() + " " + newPerson.getLastName() + " (ID:" + newPerson.getId() + ") to " + targetName);
 
                 // Generate HL7 message for the new person
-                PersonInfo personInfo = new PersonInfo(firstName, lastName, id);
-                String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
-                System.out.println("HL7 Event: " + transition.getHL7Event());
-                System.out.println(hl7Message);
-                System.out.println("\n");
+                String hl7Event = transition.getHL7Event();
+                if (hl7Event != null) {
+                    String cleanedEvent = cleanEventString(hl7Event);
+                    String hl7Message = generateHL7Message(cleanedEvent, personInfo);
+                    System.out.println("HL7 Event: " + hl7Event);
+                    System.out.println(hl7Message);
+                    System.out.println("\n");
+                } else {
+                    System.out.println("\nNO EVENT");
+                }
             } else {
                 System.err.println("Error: Target queue for state " + targetName + " is null.");
                 System.out.println("\n");
@@ -133,10 +141,16 @@ public class StateMachine {
 
                     // Generate HL7 message for the removed person
                     PersonInfo personInfo = new PersonInfo(person.getFirstName(), person.getLastName(), person.getId());
-                    String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
-                    System.out.println("HL7 Event: " + transition.getHL7Event());
-                    System.out.println(hl7Message);
-                    System.out.println("\n");
+                    String hl7Event = transition.getHL7Event();
+                    if (hl7Event != null) {
+                        String cleanedEvent = cleanEventString(hl7Event);
+                        String hl7Message = generateHL7Message(cleanedEvent, personInfo);
+                        System.out.println("HL7 Event: " + hl7Event);
+                        System.out.println(hl7Message);
+                        System.out.println("\n");
+                    } else {
+                        System.out.println("\nNO EVENT");
+                    }
                 } else {
                     System.err.println("Error: Source queue for state " + sourceName + " is empty.");
                     System.out.println("\n");
@@ -158,16 +172,44 @@ public class StateMachine {
 
                     // Generate HL7 message for the moved person
                     PersonInfo personInfo = new PersonInfo(person.getFirstName(), person.getLastName(), person.getId());
-                    String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
-                    System.out.println("HL7 Event: " + transition.getHL7Event());
-                    System.out.println(hl7Message);
-                    System.out.println("\n");
+                    String hl7Event = transition.getHL7Event();
+                    if (hl7Event != null) {
+                        String cleanedEvent = cleanEventString(hl7Event);
+                        String hl7Message = generateHL7Message(cleanedEvent, personInfo);
+                        System.out.println("HL7 Event: " + hl7Event);
+                        System.out.println(hl7Message);
+                        System.out.println("\n");
+                    } else {
+                        System.out.println("\nNO EVENT");
+                    }
                 }
             } else {
                 System.err.println("Error: Source queue or target queue is null. Source: " + sourceName + ", Target: " + targetName);
                 System.out.println("\n");
             }
         }
+    }
+
+    private String generateHL7Message(String hl7Event, PersonInfo personInfo) {
+        String methodName = HL7messageGenerator.HL7EventMethodMapper.getMethodName(hl7Event);
+        if (methodName != null) {
+            try {
+                Method method = HL7messageGenerator.class.getMethod(methodName, PersonInfo.class);
+                return (String) method.invoke(hl7messageGenerator, personInfo);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "Error generating HL7 message: " + e.getMessage();
+            }
+        } else {
+            return "No HL7 message associated with this event";
+        }
+    }
+
+    private String cleanEventString(String event) {
+        if (event == null) {
+            return "";
+        }
+        return event.split(" ")[0];
     }
 
     private void printStateQueues() {
@@ -180,7 +222,7 @@ public class StateMachine {
 
     private void promptToContinue() {
         System.out.print("\nPress Enter to continue, or type 0 to exit to the main menu:");
-        System.out.println("");
+        System.out.println("\n");
         String input = scanner.nextLine().trim();
 
         if ("0".equals(input)) {

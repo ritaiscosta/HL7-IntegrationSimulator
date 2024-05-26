@@ -30,14 +30,14 @@ public class PersonInfo {
     }
     public static String generateRandomFirstName() {
 
-        String[] firstNames = {"Maria", "João", "Ana", "José", "Rita", "Miguel", "Sofia", "Pedro", "Carla", "Rui"};
+        String[] firstNames = {"Maria","Beatriz","Bárbara", "João", "Ana", "José", "Rita", "Guilherme", "Patrícia", "Miguel", "Sofia", "Pedro", "Carla", "Rui", "Sandra"};
         Random random = new Random();
         return firstNames[random.nextInt(firstNames.length)];
     }
 
     public static String generateRandomLastName() {
 
-        String[] lastNames = {"Silva", "Santos", "Pereira", "Fernandes", "Costa", "Oliveira", "Martins", "Rodrigues", "Nunes", "Gomes"};
+        String[] lastNames = {"Silva","Morais", "Santos","Teixeira", "Pereira", "Fernandes", "Costa", "Oliveira", "Maia", "Martins", "Rodrigues", "Nunes", "Gomes"};
         Random random = new Random();
         return lastNames[random.nextInt(lastNames.length)];
     }

@@ -73,4 +73,5 @@ public class Simulation {
     public void setEndState(State endState) {
         this.endState = endState;
     }
+
 }

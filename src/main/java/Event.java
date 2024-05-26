@@ -8,7 +8,7 @@ public class Event {
 
     // Define available HL7 trigger events
     private static final List<String> availableEvents = Arrays.asList(
-            "ADT_A01 - Admit/visit Notification", "ADT_A02 - Transfer a Patient", "ADT_A03 - Discharge/End Visit", "ORM_O01 - General Order ", "ORU_R01 - Unsolicited transmission of an observation message");
+            "ADT_A01 - Admit/visit Notification", "ADT_A02 - Transfer a Patient", "ADT_A03 - Discharge/End Visit", "ORM_O01 - General Order", "ORU_R01 - Unsolicited transmission of an observation message");
 
     // Constructor
     public Event(State source, State target, String hl7Event) {
