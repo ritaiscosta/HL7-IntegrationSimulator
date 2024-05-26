@@ -2,10 +2,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class StateMachine {
-    private Simulation simulation;
-    private Map<State, Queue<Person>> stateQueues;
-    private Scanner scanner;
-    private HL7messageGenerator hl7messageGenerator = new HL7messageGenerator(); // Initialize HL7 message generator
+    private final Simulation simulation;
+    private final Map<State, Queue<Person>> stateQueues;
+    private final Scanner scanner;
+    private final HL7messageGenerator hl7messageGenerator = new HL7messageGenerator(); // Initialize HL7 message generator
 
     public StateMachine(Simulation simulation, Scanner scanner) {
         this.simulation = simulation;
@@ -33,7 +33,6 @@ public class StateMachine {
     }
 
     public void run() {
-
         printStateQueues();
 
         while (!allPeopleInEndState()) {
@@ -74,9 +73,10 @@ public class StateMachine {
         // Generate HL7 message
         String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
 
-        Person person = new Person(firstName + " " + lastName);
+        // Using the constructor with three parameters: firstName, lastName, id
+        Person person = new Person(firstName, lastName, id);
         targetQueue.add(person);
-        System.out.println("\n" + person + " entered the simulation");
+        System.out.println("\n" + person.getFirstName() + " " + person.getLastName() + " ID:" + person.getId() + " entered the simulation");
         if (transition.getHL7Event() != null) {
             System.out.println("\nEvent: " + transition.getHL7Event());
         } else {
@@ -89,46 +89,65 @@ public class StateMachine {
         State source = transition.getSource();
         State target = transition.getTarget();
 
+        String sourceName = (source != null) ? source.getName() : "Simulation Entry";
+        String targetName = (target != null) ? target.getName() : "Simulation Exit";
+
         if (source == null) {
-            executeStartTransition(transition);
+            // Special case: Adding people to the simulation
+            Queue<Person> targetQueue = stateQueues.get(target);
+            if (targetQueue != null) {
+                // Create person information
+                String firstName = PersonInfo.generateRandomFirstName();
+                String lastName = PersonInfo.generateRandomLastName();
+                String id = PersonInfo.generatePatientInternalID();
+                // Using the constructor with three parameters: firstName, lastName, id
+                Person newPerson = new Person(firstName, lastName, id);
+                targetQueue.add(newPerson);
+                System.out.println("\nAdded " + newPerson.getFirstName() + " " + newPerson.getLastName() + " ID:" + newPerson.getId() + " to " + targetName);
+
+                // Generate HL7 message for the new person
+                PersonInfo personInfo = new PersonInfo(firstName, lastName, id);
+                String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+                System.out.println(hl7Message);
+            } else {
+                System.err.println("Error: Target queue for state " + targetName + " is null.");
+            }
+        } else if (target == null) {
+            // Special case: Removing people from the simulation
+            Queue<Person> sourceQueue = stateQueues.get(source);
+            if (sourceQueue != null) {
+                Person person = sourceQueue.poll();
+                if (person != null) {
+                    System.out.println("\nRemoved " + person.getFirstName() + " " + person.getLastName() + " ID:" + person.getId() + " from " + sourceName);
+
+                    // Generate HL7 message for the removed person
+                    PersonInfo personInfo = new PersonInfo(person.getFirstName(), person.getLastName(), person.getId());
+                    String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+                    System.out.println(hl7Message);
+                } else {
+                    System.err.println("Error: Source queue for state " + sourceName + " is empty.");
+                }
+            } else {
+                System.err.println("Error: Source queue for state " + sourceName + " is null.");
+            }
         } else {
+            // Regular transition
             Queue<Person> sourceQueue = stateQueues.get(source);
             Queue<Person> targetQueue = stateQueues.get(target);
 
-            if (target == null) {
-                System.out.println("\n Error: Target state is null for transition from " + source.getName());
-                return;
-            }
+            if (sourceQueue != null && targetQueue != null) {
+                while (!sourceQueue.isEmpty() && targetQueue.size() < target.getMaxCapacity()) {
+                    Person person = sourceQueue.poll();
+                    targetQueue.add(person);
+                    System.out.println("\nMoved " + person.getFirstName() + " " + person.getLastName() + " ID:" + person.getId() + " from " + sourceName + " to " + targetName);
 
-            // Ensure the target queue is initialized
-            if (targetQueue == null) {
-                targetQueue = new LinkedList<>();
-                stateQueues.put(target, targetQueue);
-                System.out.println("\nInitialized target queue for state: " + target.getName());
-            }
-
-            int peopleToMove = Math.min(sourceQueue.size(), transition.getFrequency());
-            for (int i = 0; i < peopleToMove; i++) {
-                Person person = sourceQueue.poll();
-                if (Math.random() <= transition.getProbability()) {
-                    if (targetQueue.size() < target.getMaxCapacity()) {
-                        targetQueue.add(person);
-                        System.out.println("\n" + person + " moved from " + source.getName() + " to " + target.getName() + " with event " + transition.getHL7Event());
-                        PersonInfo personInfo = new PersonInfo(person.toString().split(" ")[0], person.toString().split(" ")[1], PersonInfo.generatePatientInternalID()); // Adjust as necessary
-                        String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
-                        if (transition.getHL7Event() != null) {
-                            System.out.println("Event: " + transition.getHL7Event());
-                        } else {
-                            System.out.println("NO EVENT");
-                        }
-                        System.out.println("\n HL7 Message: " + hl7Message);
-                    } else {
-                        sourceQueue.add(person); // Re-add person to source queue if target is full
-                        System.out.println("\n" + person + " could not move from " + source.getName() + " to " + target.getName() + " because " + target.getName() + " is full");
-                    }
-                } else {
-                    sourceQueue.add(person); // Re-add person to source queue if transition didn't happen
+                    // Generate HL7 message for the moved person
+                    PersonInfo personInfo = new PersonInfo(person.getFirstName(), person.getLastName(), person.getId());
+                    String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+                    System.out.println(hl7Message);
                 }
+            } else {
+                System.err.println("Error: Source queue or target queue is null. Source: " + sourceName + ", Target: " + targetName);
             }
         }
     }
