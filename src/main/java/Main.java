@@ -56,6 +56,7 @@ public class Main {
         System.out.print("\nChoose an option: ");
     }
 
+
     private static void createNewSimulation() {
         System.out.println("\nCreating a new simulation configuration...");
 
@@ -566,8 +567,14 @@ public class Main {
             System.out.println("\nStart State: " + selectedSimulation.getStartState().getName());
             System.out.println("End State: " + selectedSimulation.getEndState().getName());
 
-            System.out.print("\nPress Enter to continue...");
-            scanner.nextLine();
+
+            System.out.print("\nPress Enter to continue or 0 to exit:");
+            String input = scanner.nextLine().trim();
+
+            if ("0".equals(input)) {
+                return; // Exit simulation and return to main menu
+            }
+
 
             runStateMachine(selectedSimulation);
 

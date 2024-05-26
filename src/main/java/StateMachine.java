@@ -6,6 +6,7 @@ public class StateMachine {
     private final Map<State, Queue<Person>> stateQueues;
     private final Scanner scanner;
     private final HL7messageGenerator hl7messageGenerator = new HL7messageGenerator(); // Initialize HL7 message generator
+    private boolean returnToMainMenuFlag = false; // Flag to indicate returning to the main menu
 
     public StateMachine(Simulation simulation, Scanner scanner) {
         this.simulation = simulation;
@@ -35,16 +36,21 @@ public class StateMachine {
     public void run() {
         printStateQueues();
 
-        while (!allPeopleInEndState()) {
+        while (!allPeopleInEndState() && !returnToMainMenuFlag) {
             List<Transition> possibleTransitions = getPossibleTransitions();
             for (Transition transition : possibleTransitions) {
                 executeTransition(transition);
+                if (returnToMainMenuFlag) break; // Check flag after each transition
             }
-            printStateQueues();
-            promptToContinue();
+            if (!returnToMainMenuFlag) {
+                printStateQueues();
+                promptToContinue();
+            }
         }
 
-        System.out.println("\nAll people have reached the end state.");
+        if (!returnToMainMenuFlag) {
+            System.out.println("\nAll people have reached the end state.");
+        }
     }
 
     private Transition findStartTransition() {
@@ -76,11 +82,13 @@ public class StateMachine {
         // Using the constructor with three parameters: firstName, lastName, id
         Person person = new Person(firstName, lastName, id);
         targetQueue.add(person);
-        System.out.println("\n" + person.getFirstName() + " " + person.getLastName() + " ID:" + person.getId() + " entered the simulation");
+        System.out.println("\n" + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") entered the simulation");
         if (transition.getHL7Event() != null) {
             System.out.println("\nEvent: " + transition.getHL7Event());
+            System.out.println(hl7Message);
+            System.out.println("\n");
         } else {
-            System.out.println("NO EVENT");
+            System.out.println("\nNO EVENT");
         }
         System.out.println(hl7Message);
     }
@@ -103,14 +111,17 @@ public class StateMachine {
                 // Using the constructor with three parameters: firstName, lastName, id
                 Person newPerson = new Person(firstName, lastName, id);
                 targetQueue.add(newPerson);
-                System.out.println("\nAdded " + newPerson.getFirstName() + " " + newPerson.getLastName() + " ID:" + newPerson.getId() + " to " + targetName);
+                System.out.println("\nAdded " + newPerson.getFirstName() + " " + newPerson.getLastName() + " (ID:" + newPerson.getId() + ") to " + targetName);
 
                 // Generate HL7 message for the new person
                 PersonInfo personInfo = new PersonInfo(firstName, lastName, id);
                 String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+                System.out.println("HL7 Event: " + transition.getHL7Event());
                 System.out.println(hl7Message);
+                System.out.println("\n");
             } else {
                 System.err.println("Error: Target queue for state " + targetName + " is null.");
+                System.out.println("\n");
             }
         } else if (target == null) {
             // Special case: Removing people from the simulation
@@ -118,17 +129,21 @@ public class StateMachine {
             if (sourceQueue != null) {
                 Person person = sourceQueue.poll();
                 if (person != null) {
-                    System.out.println("\nRemoved " + person.getFirstName() + " " + person.getLastName() + " ID:" + person.getId() + " from " + sourceName);
+                    System.out.println("\nRemoved " + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") from " + sourceName);
 
                     // Generate HL7 message for the removed person
                     PersonInfo personInfo = new PersonInfo(person.getFirstName(), person.getLastName(), person.getId());
                     String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+                    System.out.println("HL7 Event: " + transition.getHL7Event());
                     System.out.println(hl7Message);
+                    System.out.println("\n");
                 } else {
                     System.err.println("Error: Source queue for state " + sourceName + " is empty.");
+                    System.out.println("\n");
                 }
             } else {
                 System.err.println("Error: Source queue for state " + sourceName + " is null.");
+                System.out.println("\n");
             }
         } else {
             // Regular transition
@@ -139,15 +154,18 @@ public class StateMachine {
                 while (!sourceQueue.isEmpty() && targetQueue.size() < target.getMaxCapacity()) {
                     Person person = sourceQueue.poll();
                     targetQueue.add(person);
-                    System.out.println("\nMoved " + person.getFirstName() + " " + person.getLastName() + " ID:" + person.getId() + " from " + sourceName + " to " + targetName);
+                    System.out.println("\nMoved " + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") from " + sourceName + " to " + targetName);
 
                     // Generate HL7 message for the moved person
                     PersonInfo personInfo = new PersonInfo(person.getFirstName(), person.getLastName(), person.getId());
                     String hl7Message = hl7messageGenerator.generateHL7Message(personInfo);
+                    System.out.println("HL7 Event: " + transition.getHL7Event());
                     System.out.println(hl7Message);
+                    System.out.println("\n");
                 }
             } else {
                 System.err.println("Error: Source queue or target queue is null. Source: " + sourceName + ", Target: " + targetName);
+                System.out.println("\n");
             }
         }
     }
@@ -161,8 +179,20 @@ public class StateMachine {
     }
 
     private void promptToContinue() {
-        System.out.print("\nPress Enter to continue...");
-        scanner.nextLine();
+        System.out.print("\nPress Enter to continue, or type 0 to exit to the main menu:");
+        System.out.println("");
+        String input = scanner.nextLine().trim();
+
+        if ("0".equals(input)) {
+            // Handle the exit to main menu logic
+            returnToMainMenu();
+        }
+    }
+
+    private void returnToMainMenu() {
+        returnToMainMenuFlag = true;
+        System.out.println("Simulation Ended.");
+        System.out.println("Returning to the main menu...");
     }
 
     private boolean allPeopleInEndState() {
