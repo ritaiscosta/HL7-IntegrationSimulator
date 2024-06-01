@@ -2,10 +2,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Transition {
+
     private State source;
     private State target;
-    private String hl7Event;
-    private String simulationName;
+    private Event event;
     private double probability;
     private int frequency;
 
@@ -13,16 +13,22 @@ public class Transition {
     public Transition(
             @JsonProperty("source") State source,
             @JsonProperty("target") State target,
-            @JsonProperty("hl7Event") String hl7Event,
-            @JsonProperty("simulationName") String simulationName,
+            @JsonProperty("event") Event event,
             @JsonProperty("probability") double probability,
             @JsonProperty("frequency") int frequency) {
         this.source = source;
         this.target = target;
-        this.hl7Event = hl7Event;
-        this.simulationName = simulationName;
+        this.event = event;
         this.probability = probability;
         this.frequency = frequency;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public void setEvent(Event event) {
+        this.event = event;
     }
 
     public State getSource() {
@@ -39,22 +45,6 @@ public class Transition {
 
     public void setTarget(State target) {
         this.target = target;
-    }
-
-    public String getHL7Event() {
-        return hl7Event;
-    }
-
-    public void setHL7Event(String hl7Event) {
-        this.hl7Event = hl7Event;
-    }
-
-    public String getSimulationName() {
-        return simulationName;
-    }
-
-    public void setSimulationName(String simulationName) {
-        this.simulationName = simulationName;
     }
 
     public double getProbability() {

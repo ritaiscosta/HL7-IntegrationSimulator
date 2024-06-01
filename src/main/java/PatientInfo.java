@@ -1,43 +1,24 @@
 import java.util.Random;
 
-public class PersonInfo {
-    private String firstName;
-    private String lastName;
-    private String id;
+public class PatientInfo extends Person {
 
-    public PersonInfo(String firstName, String lastName, String id) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.id = id;
+    public PatientInfo(String firstName, String lastName, String id) {
+        super(firstName, lastName, id);
     }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getId() {
-        return id;
-    }
-
 
     public static String generatePatientInternalID(){
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
     }
-    public static String generateRandomFirstName() {
 
-        String[] firstNames = {"Maria","Beatriz","Bárbara", "João", "Ana", "José", "Rita", "Guilherme", "Patrícia", "Miguel", "Sofia", "Pedro", "Carla", "Rui", "Sandra"};
+    public static String generateRandomFirstName() {
+        String[] firstNames = {"Maria", "Beatriz", "Bárbara", "João", "Ana", "José", "Rita", "Guilherme", "Patrícia", "Miguel", "Sofia", "Pedro", "Carla", "Rui", "Sandra"};
         Random random = new Random();
         return firstNames[random.nextInt(firstNames.length)];
     }
 
     public static String generateRandomLastName() {
-
-        String[] lastNames = {"Silva","Morais", "Santos","Teixeira", "Pereira", "Fernandes", "Costa", "Oliveira", "Maia", "Martins", "Rodrigues", "Nunes", "Gomes"};
+        String[] lastNames = {"Silva", "Morais", "Santos", "Teixeira", "Pereira", "Fernandes", "Costa", "Oliveira", "Maia", "Martins", "Rodrigues", "Nunes", "Gomes"};
         Random random = new Random();
         return lastNames[random.nextInt(lastNames.length)];
     }
@@ -57,37 +38,25 @@ public class PersonInfo {
         return random.nextBoolean() ? "M" : "F";
     }
 
-    public static String generateRandomStreet() {
-
+    /*public static String generateRandomStreet() {
         String[] streetNames = {"Rua da luz", "Avenida da liberdade", "Travessa da alegria", "Largo da perdição", "Praça da répulica", "Alameda dos condes", "Estrada nacional 4", "Praceta da feira"};
-
         Random random = new Random();
         int streetIndex = random.nextInt(streetNames.length);
-
-        int streetNumber = random.nextInt(999) + 1; // Random number between 1 and 999
-        String streetAddress = streetNames[streetIndex];
-        return streetAddress;
-
+        return streetNames[streetIndex];
     }
+
     public static String generateRandomCity() {
-
         String[] cities = {"Lisboa", "Porto", "Vila Nova de Gaia", "Amadora", "Braga", "Funchal", "Coimbra", "Setúbal", "Queluz", "Almada"};
-
         Random random = new Random();
-        int cityIndex = random.nextInt(cities.length);
-
-        String city = cities[cityIndex];
-        return city;
+        return cities[random.nextInt(cities.length)];
     }
 
     public static int generateRandomStreetNumber() {
         Random random = new Random();
-        int streetNumber = random.nextInt(999) + 1; // Random number between 1 and 999
-        return streetNumber;
+        return random.nextInt(999) + 1; // Random number between 1 and 999
     }
 
     public static String generateRandomPhoneNumber() {
-
         Random random = new Random();
         String[] prefixes = {"91", "93", "96"};
         String prefix = prefixes[random.nextInt(prefixes.length)];
@@ -96,10 +65,8 @@ public class PersonInfo {
     }
 
     public static String generateRandomCountry() {
-
         String[] countries = {"Portugal"};
         Random random = new Random();
         return countries[random.nextInt(countries.length)];
-    }
-
+    }*/
 }

@@ -7,11 +7,11 @@ public class Main {
 
     public static void main(String[] args) {
         // Load previous configuration files, if available
-        List<String> selectedFiles = ConfigManager.selectConfigurationFiles();
+        List<String> selectedFiles = Configuration.selectConfigurationFiles();
         Configuration configuration = null;
         if (selectedFiles != null && !selectedFiles.isEmpty()) {
             for (String selectedFile : selectedFiles) {
-                configuration = ConfigManager.readFromJson(selectedFile);
+                configuration = Configuration.readFromJson(selectedFile);
                 if (configuration != null) {
                     simulations.addAll(configuration.getSimulations());
                     System.out.println("Previous Simulation configurations loaded from " + selectedFile);
@@ -56,7 +56,6 @@ public class Main {
         System.out.print("\nChoose an option: ");
     }
 
-
     private static void createNewSimulation() {
         System.out.println("\nCreating a new simulation configuration...");
 
@@ -64,21 +63,19 @@ public class Main {
         System.out.print("\nEnter a name for the simulation: ");
         String simulationName = scanner.nextLine();
 
-        // Create lists to store states, transitions, and events
+        // Create lists to store states and transitions
         ArrayList<State> states = new ArrayList<>();
         ArrayList<Transition> transitions = new ArrayList<>();
-        ArrayList<String> events = new ArrayList<>(Event.getAvailableEvents());
 
         // Prompt the user to enter states
         System.out.println("\nCREATING STATES for Simulation: " + simulationName);
         System.out.println("\nPlease create states. Enter an empty name to finish.");
 
         int stateNumber = 1; // Counter for state numbers
-        String name = "";
         while (true) {
             System.out.println("\nState number " + stateNumber);
             System.out.print("State name: ");
-            name = scanner.nextLine();
+            String name = scanner.nextLine();
             if (name.isEmpty()) {
                 break; // Exit the loop if the name is empty
             } else {
@@ -91,7 +88,7 @@ public class Main {
                     continue; // Restart the loop
                 }
 
-                int uniqueID = StateIDGenerator.generateUniqueID();
+                int uniqueID = State.StateIDGenerator.generateUniqueID();
 
                 // Create new state with generated ID
                 State newState = new State(name, maxCapacity);
@@ -125,19 +122,19 @@ public class Main {
         System.out.println("\nCONFIGURING SPECIAL TRANSITIONS FOR START AND END STATES");
 
         // Start state transition
-        int startFrequency = getIntInput("Enter frequency for the start state transition: ");
-        double startProbability = getDoubleInput("Enter probability for the start state transition (0-1): ");
-        String startEvent = selectEventForTransition("Select event for the start state transition (or 0 for no event): ");
+        int startFrequency = getFrequency("Enter frequency for the start state transition: ");
+        double startProbability = getProbability("Enter probability for the start state transition (0-1): ");
+        Event startEvent = selectEventForTransition("Select event for the start state transition: ");
 
-        Transition startTransition = new Transition(null, startState, startEvent, simulationName, startProbability, startFrequency);
+        Transition startTransition = new Transition(null, startState, startEvent, startProbability, startFrequency);
         transitions.add(startTransition);
 
         // End state transition
-        int endFrequency = getIntInput("Enter frequency for the end state transition: ");
-        double endProbability = getDoubleInput("Enter probability for the end state transition (0-1): ");
-        String endEvent = selectEventForTransition("Select event for the end state transition (or 0 for no event): ");
+        int endFrequency = getFrequency("\nEnter frequency for the end state transition: ");
+        double endProbability = getProbability("Enter probability for the end state transition (0-1): ");
+        Event endEvent = selectEventForTransition("Select event for the end state transition: ");
 
-        Transition endTransition = new Transition(endState, null, endEvent, simulationName, endProbability, endFrequency);
+        Transition endTransition = new Transition(endState, null, endEvent, endProbability, endFrequency);
         transitions.add(endTransition);
 
         // Prompt the user to enter regular transitions
@@ -175,38 +172,16 @@ public class Main {
                 }
 
                 // Prompt the user to enter probability and frequency
-                double probability = getDoubleInput("Enter probability of transitioning from '" + sourceState.getName() + "' to '" + targetState.getName() + "' (0-1): ");
-                int frequency = getIntInput("Enter transition frequency from '" + sourceState.getName() + "' to '" + targetState.getName() + " (positive number):");
+                double probability = getProbability("Enter probability of transitioning from '" + sourceState.getName() + "' to '" + targetState.getName() + "' (0-1): ");
+                int frequency = getFrequency("Enter transition frequency from '" + sourceState.getName() + "' to '" + targetState.getName() + "' (positive number):");
 
-                // Add the transition between the selected states with correct probability and frequency
-                Transition newTransition = new Transition(sourceState, targetState, "", simulationName, probability, frequency);
+                // Select an event for the transition
+                Event selectedEvent = selectEventForTransition("Select event for the transition: ");
+
+                // Add the transition between the selected states with correct probability, frequency, and event
+                Transition newTransition = new Transition(sourceState, targetState, selectedEvent, probability, frequency);
                 transitions.add(newTransition);
 
-                // Display available events for selection
-                List<String> availableEvents = Event.getAvailableEvents();
-                System.out.println("Available HL7 Events:");
-                for (int i = 0; i < availableEvents.size(); i++) {
-                    System.out.println((i + 1) + ") " + availableEvents.get(i));
-                }
-                System.out.println("0) No event");
-
-                // Prompt the user to select an event
-                System.out.print("Enter the number of the HL7 event to associate with this transition (or 0 for no event): ");
-                int eventNumber = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                // Validate the user's input
-                if (eventNumber >= 1 && eventNumber <= availableEvents.size()) {
-                    // Get the selected event
-                    String selectedEvent = availableEvents.get(eventNumber - 1);
-
-                    // Set the selected event for the transition
-                    newTransition.setHL7Event(selectedEvent);
-                } else if (eventNumber == 0) {
-                    newTransition.setHL7Event(null);
-                } else {
-                    System.out.println("Invalid event number. Please enter a valid option.");
-                }
             } else {
                 System.out.println("Invalid state numbers. Please enter valid option.");
             }
@@ -218,7 +193,7 @@ public class Main {
                 String saveConfigurations = scanner.nextLine();
                 if (saveConfigurations.equalsIgnoreCase("yes")) {
                     // Create a new Simulation object encapsulating all the created elements
-                    Simulation simulation = new Simulation(simulationName, states, transitions, events, startState, endState);
+                    Simulation simulation = new Simulation(simulationName, states, transitions, null, startState, endState);
                     simulations.add(simulation);
 
                     // Display transitions
@@ -230,15 +205,15 @@ public class Main {
                     System.out.println("End State: " + endState.getName());
                     for (Transition transition : transitions) {
                         System.out.println((transition.getSource() == null ? "null" : transition.getSource().getName()) + " -> " +
-                                (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + " (HL7 Message: " + transition.getHL7Event() + ")");
+                                (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + " (HL7 Message: " + transition.getEvent().getEventName() + ")");
                         System.out.println("Frequency (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " + (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getFrequency());
                         System.out.println("Probability (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " + (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getProbability());
                     }
 
                     // Save configurations to a JSON file
                     Configuration config = new Configuration(simulations);
-                    String fileName = "simulation_" + ConfigManager.generateSimulationCode() + ".json"; // Unique file name using timestamp
-                    ConfigManager.writeToJson(config, fileName);
+                    String fileName = "simulation_" + Configuration.generateSimulationCode() + ".json"; // Unique file name using timestamp
+                    Configuration.writeToJson(config, fileName);
 
                 } else {
                     System.out.println("Configurations not saved.");
@@ -306,13 +281,13 @@ public class Main {
                 System.out.println(state.getName() + " (Max Capacity: " + state.getMaxCapacity() + ")");
             }
             System.out.println("Start State: " + selectedSimulation.getStartState().getName());
-            System.out.println("End State: " + selectedSimulation.getEndState().getName());
+            System.out.println("End State: " + selectedSimulation.getEndState().getName() + "\n");
             System.out.println("\nTRANSITIONS:");
             for (Transition transition : selectedSimulation.getTransitions()) {
                 System.out.println(
                         (transition.getSource() == null ? "null" : transition.getSource().getName()) + " -> " +
                                 (transition.getTarget() == null ? "null" : transition.getTarget().getName()) +
-                                " (HL7 Message: " + transition.getHL7Event() + ")"
+                                " (HL7 Message: " + transition.getEvent().getEventName() + ")"
                 );
                 System.out.println("Frequency (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " +
                         (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getFrequency());
@@ -426,10 +401,10 @@ public class Main {
                     String modifyEventInput = scanner.nextLine().trim();
                     if (modifyEventInput.equalsIgnoreCase("yes")) {
                         // Display available events for selection
-                        List<String> availableEvents = Event.getAvailableEvents();
+                        List<Event> availableEvents = Event.getAvailableEvents();
                         System.out.println("Available HL7 Events:");
                         for (int i = 0; i < availableEvents.size(); i++) {
-                            System.out.println((i + 1) + ") " + availableEvents.get(i));
+                            System.out.println((i + 1) + ") " + availableEvents.get(i).getEventName());
                         }
 
                         // Prompt the user to select an event
@@ -440,10 +415,10 @@ public class Main {
                         // Validate the user's input
                         if (eventNumber >= 1 && eventNumber <= availableEvents.size()) {
                             // Get the selected event
-                            String selectedEvent = availableEvents.get(eventNumber - 1);
+                            Event selectedEvent = availableEvents.get(eventNumber - 1);
 
                             // Set the selected event for the transition
-                            transition.setHL7Event(selectedEvent);
+                            transition.setEvent(selectedEvent);
                         } else {
                             System.out.println("Invalid event number. The current event will be kept.");
                         }
@@ -486,14 +461,14 @@ public class Main {
                 System.out.println("\nTransitions:");
                 for (Transition transition : selectedSimulation.getTransitions()) {
                     System.out.println((transition.getSource() == null ? "null" : transition.getSource().getName()) + " -> " +
-                            (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + " (HL7 Message: " + transition.getHL7Event() + ")");
+                            (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + " (HL7 Message: " + transition.getEvent().getEventName() + ")");
                     System.out.println("Frequency (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " +
                             (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getFrequency());
                     System.out.println("Probability (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " +
                             (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getProbability() + "\n");
                 }
                 String newFileName = selectedFiles.get(0).replace(".json", "(MODIFIED).json");
-                ConfigManager.updateJsonFile(configuration, newFileName);
+                Configuration.updateJsonFile(configuration, newFileName);
 
                 System.out.println("\nSimulation modified successfully.");
             } else {
@@ -506,7 +481,6 @@ public class Main {
             System.out.println("Invalid simulation number. Please enter a valid number.");
         }
     }
-
 
     private static void listExistingSimulations() {
         while (true) {
@@ -531,22 +505,24 @@ public class Main {
                     // Display details of the selected simulation
                     Simulation selectedSimulation = simulations.get(selection - 1);
                     System.out.println("\nSimulation Details:");
-                    System.out.println("Name: " + selectedSimulation.getName());
-                    System.out.println("States:" + stateNumber);
+                    System.out.println("\nName: " + selectedSimulation.getName());
+                    System.out.println("\nStates:");
                     for (State state : selectedSimulation.getStates()) {
                         System.out.println(state.getName() + " (Max Capacity: " + state.getMaxCapacity() + ")");
                     }
-                    System.out.println("Start State: " + selectedSimulation.getStartState().getName());
+                    System.out.println("\nStart State: " + selectedSimulation.getStartState().getName());
                     System.out.println("End State: " + selectedSimulation.getEndState().getName());
-                    System.out.println("Transitions:");
+                    System.out.println("\nTransitions:");
                     for (Transition transition : selectedSimulation.getTransitions()) {
                         System.out.println((transition.getSource() == null ? "null" : transition.getSource().getName()) + " -> " +
-                                (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + " (HL7 Message: " + transition.getHL7Event() + ")");
-                        System.out.println("Frequency (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " + (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getFrequency());
-                        System.out.println("Probability (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " + (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getProbability());
+                                (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + " (HL7 Message: " + transition.getEvent().getEventName() + ")");
+                        System.out.println("Frequency (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " +
+                                (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getFrequency());
+                        System.out.println("Probability (" + (transition.getSource() == null ? "null" : transition.getSource().getName()) + " to " +
+                                (transition.getTarget() == null ? "null" : transition.getTarget().getName()) + "): " + transition.getProbability());
                     }
 
-                    System.out.println("Press Enter to view another simulation or 0 to return to the main menu.");
+                    System.out.println("\nPress Enter to view another simulation or 0 to return to the main menu.");
                     String input = scanner.nextLine();
                     if (input.equals("0")) {
                         return;
@@ -567,14 +543,12 @@ public class Main {
             System.out.println("\nStart State: " + selectedSimulation.getStartState().getName());
             System.out.println("End State: " + selectedSimulation.getEndState().getName());
 
-
             System.out.print("\nPress Enter to continue or 0 to exit:");
             String input = scanner.nextLine().trim();
 
             if ("0".equals(input)) {
                 return; // Exit simulation and return to main menu
             }
-
 
             runStateMachine(selectedSimulation);
 
@@ -611,7 +585,7 @@ public class Main {
     }
 
     private static void runStateMachine(Simulation simulation) {
-        StateMachine stateMachine = new StateMachine(simulation, scanner);
+        StateMachine stateMachine = new StateMachine(simulation);
         stateMachine.run();
     }
 
@@ -623,7 +597,7 @@ public class Main {
         System.exit(0);
     }
 
-    private static int getIntInput(String prompt) {
+    private static int getFrequency(String prompt) {
         int input;
         while (true) {
             System.out.print(prompt);
@@ -640,7 +614,7 @@ public class Main {
         return input;
     }
 
-    private static double getDoubleInput(String prompt) {
+    private static double getProbability(String prompt) {
         double input;
         while (true) {
             System.out.print(prompt);
@@ -657,14 +631,14 @@ public class Main {
         return input;
     }
 
-    private static String selectEventForTransition(String prompt) {
-        List<String> availableEvents = Event.getAvailableEvents();
+    private static Event selectEventForTransition(String prompt) {
+        List<Event> availableEvents = Event.getAvailableEvents();
         System.out.println(prompt);
         for (int i = 0; i < availableEvents.size(); i++) {
-            System.out.println((i + 1) + ") " + availableEvents.get(i));
+            System.out.println((i + 1) + ") " + availableEvents.get(i).getEventName());
         }
-        System.out.println("0) No event");
-        System.out.print("Enter the number of the event (or 0 for no event): ");
+
+        System.out.print("Enter the number of the event): ");
         int eventNumber = scanner.nextInt();
         scanner.nextLine(); // Consume newline
 

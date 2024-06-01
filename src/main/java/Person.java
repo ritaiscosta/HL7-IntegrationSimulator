@@ -1,5 +1,4 @@
 public class Person {
-    private static int idCounter = 0;
     private final String id;
     private final String firstName;
     private final String lastName;
@@ -8,10 +7,6 @@ public class Person {
         this.firstName = firstName;
         this.lastName = lastName;
         this.id = id;
-    }
-
-    public static synchronized int getIdCounter() {
-        return idCounter++;
     }
 
     public String getId() {
@@ -28,6 +23,6 @@ public class Person {
 
     @Override
     public String toString() {
-        return firstName + " " + lastName + " (" + id + ")";
+        return firstName + " " + lastName + " (ID:" + id + ")";
     }
 }
