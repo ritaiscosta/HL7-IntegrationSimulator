@@ -1,0 +1,82 @@
+2024-06-01 16:13:47 - Starting state machine for simulation: test
+2024-06-01 16:13:47 - State lists initialized for states: adeus, ola
+2024-06-01 16:13:47 - João Silva (ID:673281) entered the simulation
+2024-06-01 16:13:47 - Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||673281|||Silva^João||19550223|F
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:13:47 - Current state of the simulation:
+2024-06-01 16:13:47 - ola: João Silva (ID:673281)
+2024-06-01 16:13:47 - adeus: 
+2024-06-01 16:13:47 - Added Sandra Morais (ID:115686) to ola
+2024-06-01 16:13:47 - HL7 Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||115686|||Morais^Sandra||19991022|M
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:13:47 - Added Ana Rodrigues (ID:380973) to ola
+2024-06-01 16:13:47 - HL7 Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||380973|||Rodrigues^Ana||19710803|F
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:13:47 - Added Rita Nunes (ID:976294) to ola
+2024-06-01 16:13:47 - HL7 Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||976294|||Nunes^Rita||19920109|F
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:13:47 - Moved João Silva (ID:673281) from ola to adeus
+2024-06-01 16:13:47 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||673281|||Silva^João||19830819|M
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:13:47 - Moved Sandra Morais (ID:115686) from ola to adeus
+2024-06-01 16:13:47 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||115686|||Morais^Sandra||19631208|F
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:13:47 - Moved Ana Rodrigues (ID:380973) from ola to adeus
+2024-06-01 16:13:47 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||380973|||Rodrigues^Ana||19910723|F
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:13:47 - Moved Rita Nunes (ID:976294) from ola to adeus
+2024-06-01 16:13:47 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:13:47 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||976294|||Nunes^Rita||19530224|M
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:13:47 - Current state of the simulation:
+2024-06-01 16:13:47 - ola: 
+2024-06-01 16:13:47 - adeus: João Silva (ID:673281), Sandra Morais (ID:115686), Ana Rodrigues (ID:380973), Rita Nunes (ID:976294)
+2024-06-01 16:13:48 - All people have reached the end state.
+2024-06-01 16:13:48 - Removed João Silva (ID:673281) from adeus
+2024-06-01 16:13:48 - HL7 Event: No event
+2024-06-01 16:13:48 - No HL7 message associated with this event
+2024-06-01 16:13:48 - Current state of the simulation:
+2024-06-01 16:13:48 - ola: 
+2024-06-01 16:13:48 - adeus: Sandra Morais (ID:115686), Ana Rodrigues (ID:380973), Rita Nunes (ID:976294)
+2024-06-01 16:13:48 - Removed Sandra Morais (ID:115686) from adeus
+2024-06-01 16:13:48 - HL7 Event: No event
+2024-06-01 16:13:48 - No HL7 message associated with this event
+2024-06-01 16:13:48 - Current state of the simulation:
+2024-06-01 16:13:48 - ola: 
+2024-06-01 16:13:48 - adeus: Ana Rodrigues (ID:380973), Rita Nunes (ID:976294)
+2024-06-01 16:13:48 - Removed Ana Rodrigues (ID:380973) from adeus
+2024-06-01 16:13:48 - HL7 Event: No event
+2024-06-01 16:13:48 - No HL7 message associated with this event
+2024-06-01 16:13:48 - Current state of the simulation:
+2024-06-01 16:13:48 - ola: 
+2024-06-01 16:13:48 - adeus: Rita Nunes (ID:976294)
+2024-06-01 16:13:48 - Removed Rita Nunes (ID:976294) from adeus
+2024-06-01 16:13:48 - HL7 Event: No event
+2024-06-01 16:13:48 - No HL7 message associated with this event
+2024-06-01 16:13:48 - Current state of the simulation:
+2024-06-01 16:13:48 - ola: 
+2024-06-01 16:13:48 - adeus: 
+2024-06-01 16:13:48 - All people have been removed from the simulation.

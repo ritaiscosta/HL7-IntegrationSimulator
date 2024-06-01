@@ -1,0 +1,82 @@
+2024-06-01 16:10:18 - Starting state machine for simulation: test
+2024-06-01 16:10:18 - State lists initialized for states: ola, adeus
+2024-06-01 16:10:18 - Rui Fernandes (ID:964479) entered the simulation
+2024-06-01 16:10:18 - Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||964479|||Fernandes^Rui||19960202|M
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:10:18 - Current state of the simulation:
+2024-06-01 16:10:18 - ola: Rui Fernandes (ID:964479)
+2024-06-01 16:10:18 - adeus: 
+2024-06-01 16:10:18 - Added Pedro Gomes (ID:180499) to ola
+2024-06-01 16:10:18 - HL7 Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||180499|||Gomes^Pedro||19530501|F
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:10:18 - Added Rita Costa (ID:569185) to ola
+2024-06-01 16:10:18 - HL7 Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||569185|||Costa^Rita||19650209|M
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:10:18 - Added Sandra Martins (ID:530969) to ola
+2024-06-01 16:10:18 - HL7 Event: ADT_A01 - Admit/visit Notification
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A01|12345|P|2.5.1
+PID||530969|||Martins^Sandra||19680204|M
+PV1|1|I|ICU|EMER||||||||||||||||||||||||||||||||||||||||20230526120000
+EVN||20230526120000
+2024-06-01 16:10:18 - Moved Rui Fernandes (ID:964479) from ola to adeus
+2024-06-01 16:10:18 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||964479|||Fernandes^Rui||19900815|M
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:10:18 - Moved Pedro Gomes (ID:180499) from ola to adeus
+2024-06-01 16:10:18 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||180499|||Gomes^Pedro||19600421|F
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:10:18 - Moved Rita Costa (ID:569185) from ola to adeus
+2024-06-01 16:10:18 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||569185|||Costa^Rita||19570916|F
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:10:18 - Moved Sandra Martins (ID:530969) from ola to adeus
+2024-06-01 16:10:18 - HL7 Event: ADT_A03 - Discharge/End Visit
+2024-06-01 16:10:18 - MSH|^~\&|TestSendingSystem|TestSendingFacility|TestReceivingSystem|TestReceivingFacility|20230526120000||ADT^A03|12345|P|2.5.1
+PID||530969|||Martins^Sandra||19581019|M
+PV1||I|Ward1|E||||||||||||||||||||||||||||||||||||||||20230526120000|20230526180000
+EVN|A03|20230526120000
+2024-06-01 16:10:18 - Current state of the simulation:
+2024-06-01 16:10:18 - ola: 
+2024-06-01 16:10:18 - adeus: Rui Fernandes (ID:964479), Pedro Gomes (ID:180499), Rita Costa (ID:569185), Sandra Martins (ID:530969)
+2024-06-01 16:10:19 - All people have reached the end state.
+2024-06-01 16:10:19 - Removed Rui Fernandes (ID:964479) from adeus
+2024-06-01 16:10:19 - HL7 Event: No event
+2024-06-01 16:10:19 - No HL7 message associated with this event
+2024-06-01 16:10:19 - Current state of the simulation:
+2024-06-01 16:10:19 - ola: 
+2024-06-01 16:10:19 - adeus: Pedro Gomes (ID:180499), Rita Costa (ID:569185), Sandra Martins (ID:530969)
+2024-06-01 16:10:19 - Removed Pedro Gomes (ID:180499) from adeus
+2024-06-01 16:10:19 - HL7 Event: No event
+2024-06-01 16:10:19 - No HL7 message associated with this event
+2024-06-01 16:10:19 - Current state of the simulation:
+2024-06-01 16:10:19 - ola: 
+2024-06-01 16:10:19 - adeus: Rita Costa (ID:569185), Sandra Martins (ID:530969)
+2024-06-01 16:10:19 - Removed Rita Costa (ID:569185) from adeus
+2024-06-01 16:10:19 - HL7 Event: No event
+2024-06-01 16:10:19 - No HL7 message associated with this event
+2024-06-01 16:10:19 - Current state of the simulation:
+2024-06-01 16:10:19 - ola: 
+2024-06-01 16:10:19 - adeus: Sandra Martins (ID:530969)
+2024-06-01 16:10:19 - Removed Sandra Martins (ID:530969) from adeus
+2024-06-01 16:10:19 - HL7 Event: No event
+2024-06-01 16:10:19 - No HL7 message associated with this event
+2024-06-01 16:10:19 - Current state of the simulation:
+2024-06-01 16:10:19 - ola: 
+2024-06-01 16:10:19 - adeus: 
+2024-06-01 16:10:19 - All people have been removed from the simulation.

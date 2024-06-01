@@ -1,4 +1,9 @@
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,6 +14,8 @@ public class StateMachine {
     private final Timer timer;
     private boolean returnToMainMenuFlag = false; // Flag to indicate returning to the main menu
     private int personCount = 0;
+    private BufferedWriter logWriter;
+    private String logFilePath;
 
     public StateMachine(Simulation simulation) {
         this.simulation = simulation;
@@ -25,8 +32,11 @@ public class StateMachine {
             stateLists.put(state.getName(), new ArrayList<>());
         }
 
-        System.out.println("\nStarting state machine for simulation: " + simulation.getName());
-        System.out.println("\nState lists initialized for states: " + String.join(", ", stateLists.keySet()));
+        // Initialize log file
+        initializeLogFile();
+
+        log("Starting state machine for simulation: " + simulation.getName());
+        log("State lists initialized for states: " + String.join(", ", stateLists.keySet()));
 
         // Initialize people in the start state based on the start transition
         Transition startTransition = findStartTransition();
@@ -41,6 +51,34 @@ public class StateMachine {
         scheduleFrequencyBasedMovement();
     }
 
+    private void initializeLogFile() {
+        try {
+            File logDir = new File("Simulation Logs", simulation.getName());
+            if (!logDir.exists()) {
+                logDir.mkdirs();
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            String logFileName = simulation.getName() + "_" + sdf.format(new Date()) + ".txt";
+            logFilePath = new File(logDir, logFileName).getPath();
+            logWriter = new BufferedWriter(new FileWriter(logFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void log(String message) {
+        try {
+            if (logWriter != null) {
+                String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                logWriter.write(timestamp + " - " + message);
+                logWriter.newLine();
+                logWriter.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void run() {
         while (!allPeopleInEndState() && !returnToMainMenuFlag) {
             try {
@@ -51,15 +89,17 @@ public class StateMachine {
         }
 
         if (!returnToMainMenuFlag) {
-            System.out.println("\nAll people have reached the end state.");
+            log("All people have reached the end state.");
             while (!allPeopleRemoved()) { // Continue executing removal transitions until all people are removed
                 executeRemovalTransition();
             }
-            System.out.println("\nAll people have been removed from the simulation.");
+            log("All people have been removed from the simulation.");
         }
 
         // Cancel the timer to stop further movements
         timer.cancel();
+
+        System.out.println("The output of the simulation was saved on " + logFilePath);
     }
 
     private Transition findStartTransition() {
@@ -74,13 +114,13 @@ public class StateMachine {
     private void executeStartTransition(Transition transition) {
         State target = transition.getTarget();
         if (target == null) {
-            System.out.println("\nError: Target state is null in executeStartTransition.");
+            log("Error: Target state is null in executeStartTransition.");
             return;
         }
         List<Person> targetList = stateLists.get(target.getName());
 
         if (targetList == null) {
-            System.out.println("Error: Target list for state " + target.getName() + " is null.");
+            log("Error: Target list for state " + target.getName() + " is null.");
             return;
         }
 
@@ -93,15 +133,14 @@ public class StateMachine {
         // Using the constructor with three parameters: firstName, lastName, id
         targetList.add(patientInfo);
         personCount++;  // Increment person count
-        System.out.println("\n" + patientInfo.getFirstName() + " " + patientInfo.getLastName() + " (ID:" + patientInfo.getId() + ") entered the simulation");
+        log(patientInfo.getFirstName() + " " + patientInfo.getLastName() + " (ID:" + patientInfo.getId() + ") entered the simulation");
 
         Event event = transition.getEvent();
         if (event != null) {
             String cleanedEvent = cleanEventString(event.getEventName());
             String message = generateMessage(cleanedEvent, patientInfo);
-            System.out.println("\nEvent: " + event.getEventName());
-            System.out.println(message);
-            System.out.println("\n");
+            log("Event: " + event.getEventName());
+            log(message);
         }
         printStateLists();
     }
@@ -206,19 +245,17 @@ public class StateMachine {
 
                 targetList.add(patientInfo);
                 personCount++;
-                System.out.println("\nAdded " + patientInfo.getFirstName() + " " + patientInfo.getLastName() + " (ID:" + patientInfo.getId() + ") to " + targetName);
+                log("Added " + patientInfo.getFirstName() + " " + patientInfo.getLastName() + " (ID:" + patientInfo.getId() + ") to " + targetName);
 
                 Event event = transition.getEvent();
                 if (event != null) {
                     String cleanedEvent = cleanEventString(event.getEventName());
                     String message = generateMessage(cleanedEvent, patientInfo);
-                    System.out.println("HL7 Event: " + event.getEventName());
-                    System.out.println(message);
-                    System.out.println("\n");
+                    log("HL7 Event: " + event.getEventName());
+                    log(message);
                 }
             } else {
-                System.err.println("Error: Target list for state " + targetName + " is null.");
-                System.out.println("\n");
+                log("Error: Target list for state " + targetName + " is null.");
             }
         } else if (target == null) {
             // Special case: Removing people from the simulation
@@ -226,20 +263,18 @@ public class StateMachine {
             if (sourceList != null && !sourceList.isEmpty()) {
                 Person person = sourceList.remove(0);
                 personCount--;
-                System.out.println("\nRemoved " + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") from " + sourceName);
+                log("Removed " + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") from " + sourceName);
 
                 PatientInfo patientInfo = new PatientInfo(person.getFirstName(), person.getLastName(), person.getId());
                 Event event = transition.getEvent();
                 if (event != null) {
                     String cleanedEvent = cleanEventString(event.getEventName());
                     String message = generateMessage(cleanedEvent, patientInfo);
-                    System.out.println("HL7 Event: " + event.getEventName());
-                    System.out.println(message);
-                    System.out.println("\n");
+                    log("HL7 Event: " + event.getEventName());
+                    log(message);
                 }
             } else {
-                System.err.println("Error: Source list for state " + sourceName + " is null or empty.");
-                System.out.println("\n");
+                log("Error: Source list for state " + sourceName + " is null or empty.");
             }
         } else {
             // Regular transition
@@ -250,7 +285,7 @@ public class StateMachine {
                 while (!sourceList.isEmpty() && targetList.size() < target.getMaxCapacity()) {
                     Person person = sourceList.remove(0);
                     targetList.add(person);
-                    System.out.println("\nMoved " + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") from " + sourceName + " to " + targetName);
+                    log("Moved " + person.getFirstName() + " " + person.getLastName() + " (ID:" + person.getId() + ") from " + sourceName + " to " + targetName);
 
                     // Generate HL7 message for the moved person
                     PatientInfo patientInfo = new PatientInfo(person.getFirstName(), person.getLastName(), person.getId());
@@ -258,14 +293,12 @@ public class StateMachine {
                     if (event != null) {
                         String cleanedEvent = cleanEventString(event.getEventName());
                         String message = generateMessage(cleanedEvent, patientInfo);
-                        System.out.println("HL7 Event: " + event.getEventName());
-                        System.out.println(message);
-                        System.out.println("\n");
+                        log("HL7 Event: " + event.getEventName());
+                        log(message);
                     }
                 }
             } else {
-                System.err.println("Error: Source list or target list is null. Source: " + sourceName + ", Target: " + targetName);
-                System.out.println("\n");
+                log("Error: Source list or target list is null. Source: " + sourceName + ", Target: " + targetName);
             }
         }
     }
@@ -293,15 +326,13 @@ public class StateMachine {
         return event.split(" ")[0];
     }
 
-
     private void printStateLists() {
-        System.out.println("\nCurrent state of the simulation:");
+        log("Current state of the simulation:");
         for (State state : simulation.getStates()) {
-            System.out.println(state.getName() + ": " + stateLists.get(state.getName()).stream()
+            log(state.getName() + ": " + stateLists.get(state.getName()).stream()
                     .map(person -> person.toString())
                     .collect(Collectors.joining(", ")));
         }
-        System.out.println();
     }
 
     private boolean allPeopleInEndState() {
