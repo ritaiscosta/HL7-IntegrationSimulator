@@ -99,7 +99,7 @@ public class StateMachine {
         // Cancel the timer to stop further movements
         timer.cancel();
 
-        System.out.println("The output of the simulation was saved on " + logFilePath);
+        System.out.println("The output of the simulation was saved on '" + logFilePath+"'");
     }
 
     private Transition findStartTransition() {
