@@ -1,0 +1,268 @@
+@startuml
+
+class Configuration {
+    -List<Simulation> simulations
+    -static final ObjectMapper objectMapper
+    +Configuration(List<Simulation> simulations)
+    +List<Simulation> getSimulations()
+    +static String generateSimulationCode()
+    +static void writeToJson(Configuration configuration, String fileName) throws IOException
+    +static Configuration readFromJson(String fileName) throws IOException
+    +static List<String> getConfigurationFiles()
+    +static void updateJsonFile(Configuration configuration, String fileName) throws IOException
+}
+
+class Event {
+    - String eventName
+    - int eventID
+    - static List<Event> availableEvents
+    + Event(String eventName, int eventID)
+    + String getEventName()
+    + int getEventID()
+    + static List<Event> getAvailableEvents()
+    + static String getCurrentTimestamp()
+    + String generateADT_A01Message(PatientInfo patientInfo, String timestamp)
+    + String generateADT_A02Message(PatientInfo patientInfo, String timestamp)
+    + String generateADT_A03Message(PatientInfo patientInfo, String timestamp)
+    + String generateORM_O01Message(PatientInfo patientInfo, String timestamp)
+    + String generateORU_R01Message(PatientInfo patientInfo, String timestamp)
+    - void populateCommonSegments(MSH msh, EVN evn, PID pid, PatientInfo patientInfo, String timestamp)
+    - void populateMSH(MSH msh, String timestamp)
+    - void populateEVN(EVN evn, String timestamp)
+    - void populatePID(PID pid, PatientInfo patientInfo)
+    + String toString()
+
+    class HL7EventMethodMapper {
+        - static Map<String, String> eventToMethodMap
+        + static String getMethodName(String event)
+    }
+}
+
+class Main extends Application {
+    - static List<Simulation> simulations
+    - ListView<String> listView
+    - ObservableList<String> configFiles
+    - static final double WINDOW_WIDTH
+    - static final double WINDOW_HEIGHT
+    - static boolean isModified
+    + void main(String[] args)
+    + void start(Stage primaryStage)
+    + void loadSelectedFiles(Stage stage)
+    + static void showAlert(Alert.AlertType alertType, String title, String message)
+    + static void startApp(List<String> selectedFiles)
+    + static void displayMenu()
+    + static void createNewSimulation(Stage ownerStage) throws IOException
+    + static boolean isLoopDetected(List<Transition> transitions, State source, State target)
+    + static boolean validateWorkflow(List<Transition> transitions, State startState, State endState)
+    + static void modifySimulationMenu(Stage ownerStage) throws IOException
+    + static void modifyExistingSimulation(Stage ownerStage, Simulation selectedSimulation, int simulationIndex)
+    + static void updateTransitions(Simulation simulation, ObservableList<State> stateObservableList)
+    + static void showWarningDialog(Stage currentStage)
+    + static void listSimulationsMenu(Stage ownerStage)
+    + static void listExistingSimulations(Simulation simulation)
+    + static void selectSimulationForStateMachine(Consumer<Simulation> callback)
+    + static void startSimulation(Stage ownerStage)
+    + static void runStateMachine(Simulation simulation, long timeMultiplier)
+    + static void exitProgram()
+}
+
+class PatientInfo extends Person {
+    - String admissionDateTime
+    - String dischargeDateTime
+    + PatientInfo(String firstName, String lastName, String id, String DOB, String street, String city, String phoneNumber, String country, String sex, String admissionDateTime, String dischargeDateTime)
+    + String getAdmissionDateTime()
+    + void setAdmissionDateTime(String admissionDateTime)
+    + String getDischargeDateTime()
+    + void setDischargeDateTime(String dischargeDateTime)
+}
+
+class Person {
+    - String firstName
+    - String lastName
+    - String id
+    - String DOB
+    - String street
+    - String city
+    - String phoneNumber
+    - String country
+    - String sex
+    + Person(String firstName, String lastName, String id, String DOB, String street, String city, String phoneNumber, String country, String sex)
+    + String getFirstName()
+    + void setFirstName(String firstName)
+    + String getLastName()
+    + void setLastName(String lastName)
+    + String getId()
+    + void setId(String id)
+    + String getDOB()
+    + void setDOB(String DOB)
+    + String getStreet()
+    + void setStreet(String street)
+    + String getCity()
+    + void setCity(String city)
+    + String getPhoneNumber()
+    + void setPhoneNumber(String phoneNumber)
+    + String getCountry()
+    + void setCountry(String country)
+    + String getSex()
+    + void setSex(String sex)
+    + String toString()
+    + static String generatePatientInternalID()
+    + static String generateRandomFirstName(String sex)
+    + static String generateRandomLastName()
+    + static String generateRandomDOB()
+    + static String generateRandomSex()
+    + static String generateRandomStreet()
+    + static String generateRandomCity()
+    + static String generateRandomPhoneNumber()
+    + static String generateRandomCountry()
+}
+
+class Simulation {
+    - String name
+    - List<State> states
+    - List<Transition> transitions
+    - State startState
+    - State endState
+    + Simulation(String name, List<State> states, List<Transition> transitions, State startState, State endState)
+    + String getName()
+    + void setName(String name)
+    + List<State> getStates()
+    + List<Transition> getTransitions()
+    + State getStartState()
+    + void setStartState(State startState)
+    + State getEndState()
+    + void setEndState(State endState)
+}
+
+class State {
+    - String name
+    - int maxCapacity
+    - int stateID
+    - List<Person> personList
+    + State(String name, int maxCapacity, int stateID)
+    + String getName()
+    + void setName(String name)
+    + int getMaxCapacity()
+    + void setMaxCapacity(int maxCapacity)
+    + int getStateID()
+    + static class StateIDGenerator
+    + String toString()
+}
+
+class StateMachine {
+    - final Simulation simulation
+    - final Random random
+    - final TimeSimulator timer
+    - int personCount
+    - final Map<String, List<Person>> stateLists
+    - BufferedWriter logWriter
+    - String logFilePath
+    - Alert initialAlert
+    - volatile boolean userStoppedSimulation
+    - static final AtomicInteger actionCounter
+    - final ScheduledExecutorService scheduler
+    - StateMachineVisualizer visualizer
+    + StateMachine(Simulation simulation, double timeMultiplier, StateMachineVisualizer visualizer)
+    + void run()
+    + void stopSimulation()
+    - void scheduleFrequencyBasedMovement()
+    - boolean shouldTransitionOccur(double probability)
+    - synchronized boolean canExecuteTransition(Transition transition)
+    - synchronized void executeTransition(Transition transition)
+    - void executeStartTransition(Transition transition)
+    - void executeRemovalTransition()
+    - List<Transition> getPossibleRemovalTransitions()
+    - void updateVisualizer()
+    - Transition findStartTransition()
+    - void initializeLogFile()
+    - void log(String message)
+    - void movePersons()
+    - PatientInfo createNewPatientInfo()
+    - String generateMessage(String eventName, PatientInfo patientInfo, String timestamp)
+    - String cleanEventString(String event)
+    - void printStateLists()
+    - boolean allPeopleInEndState()
+    - boolean allPeopleRemoved()
+    - List<Transition> getPossibleTransitions()
+    - void updatePersonCount()
+    - void showFinalAlert(String message)
+}
+
+class StateMachineVisualizer extends Application {
+    - static final double WINDOW_WIDTH
+    - static final double WINDOW_HEIGHT
+    - final Pane pane
+    - final Map<String, Label> stateLabels
+    - final Map<String, Integer> stateCounts
+    - final Map<String, Circle> connectionPoints
+    - Stage stage
+    - StateMachine stateMachine
+    - String simulationName
+    + void setSimulationName(String simulationName)
+    + void setStateMachine(StateMachine stateMachine)
+    + void start(Stage primaryStage)
+    + void initialize(List<State> states, List<Transition> transitions, State startState, State endState)
+    + Pane getPane()
+    + void updateState(String stateName, int count)
+    + void close()
+    - void showConfirmationDialog()
+    - void drawStateMachine(List<State> states, List<Transition> transitions, State startState, State endState)
+    - void createState(String stateName, double x, double y)
+    - void createTransition(String fromState, String toState)
+    - void createStartTransition(String toState)
+    - void createEndTransition(String fromState)
+    - void addArrowHead(double x, double y, double controlX, double controlY)
+    - void updateStateLabels()
+}
+
+class TimeSimulator {
+    - final Timer timer
+    - final long timeMultiplier
+    - final AtomicLong simulatedTime
+    + TimeSimulator(long timeMultiplier)
+    + void cancel()
+    + void advanceSimulatedTime(long millis)
+    + String getFormattedSimulatedTime()
+    + String getFormattedSimulatedTimestamp()
+}
+
+class Transition {
+    - State source
+    - State target
+    - Event event
+    - double probability
+    - int frequency
+    + Transition(State source, State target, Event event, double probability, int frequency)
+    + Event getEvent()
+    + void setEvent(Event event)
+    + State getSource()
+    + void setSource(State source)
+    + State getTarget()
+    + void setTarget(State target)
+    + double getProbability()
+    + void setProbability(double probability)
+    + int getFrequency()
+    + void setFrequency(int frequency)
+    + String toString()
+}
+
+Configuration --> Simulation
+Simulation --> State
+Simulation --> Transition
+Transition --> State : source
+Transition --> State : target
+Transition --> Event
+State --> Person
+PatientInfo --> Person
+Main *-- Configuration
+Main *-- Simulation
+Main *-- State
+Main *-- Transition
+Main *-- Event
+Main *-- StateMachine
+Main *-- PatientInfo
+Application <|-- Main
+StateMachineVisualizer *-- StateMachine
+Application <|-- StateMachineVisualizer
+
+@enduml

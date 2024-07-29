@@ -62,4 +62,10 @@ public class Transition {
     public void setFrequency(int frequency) {
         this.frequency = frequency;
     }
+
+    @Override
+    public String toString() {
+        return (source != null ? source.getName() : "null") + " -> " +
+                (target != null ? target.getName() : "null") + " (Event: " + event.getEventName() + ")";
+    }
 }

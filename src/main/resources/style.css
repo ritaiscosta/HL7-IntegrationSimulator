@@ -1,0 +1,171 @@
+/* Define your color scheme */
+.root {
+    -fx-base: #1b1f3a; /* Dark blue background */
+    -fx-background: #ffffff; /* White background */
+}
+
+.label {
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #000000; /* Black text color */
+}
+
+/* Title Styles */
+.label-title {
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #000000; /* Black text color */
+}
+
+/* Subtitle Styles */
+.label-subtitle {
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: #666666; /* Dark grey text color */
+}
+
+
+/* Button Styles */
+.button {
+    -fx-background-color: #233a77; /* Darker blue for buttons */
+    -fx-text-fill: #ffffff; /* White text color */
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 14px;
+    -fx-padding: 10px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+}
+
+.button:hover {
+    -fx-background-color: #1b2e66; /* Slightly darker blue when hovered */
+}
+
+.button:pressed {
+    -fx-background-color: #14214f; /* Even darker blue when pressed */
+}
+
+/* Text Field Styles */
+.text-field {
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
+    -fx-border-color: #233a77; /* Darker blue border */
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-background-color: #ffffff; /* White background */
+}
+
+/* ComboBox Styles */
+.combo-box {
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 14px;
+    -fx-padding: 5px;
+    -fx-border-color: #233a77; /* Darker blue border */
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-background-color: #d3d3d3; /* Light grey background */
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #d3d3d3; /* Light grey background */
+    -fx-text-fill: #ffffff; /* White text color */
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #d3d3d3; /* Light grey background */
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #d3d3d3; /* Light grey background */
+    -fx-text-fill: #ffffff; /* White text color */
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #bfbfbf; /* Slightly darker grey for hover */
+}
+
+.combo-box-popup .list-cell:filled:focused {
+    -fx-background-color: #a9a9a9; /* Slightly darker grey for focused */
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #233a77; /* Dark blue for selected item */
+    -fx-text-fill: #ffffff; /* White text color for selected item */
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #233a77; /* Dark blue for selected item */
+    -fx-text-fill: #ffffff; /* White text color for selected item */
+}
+
+/* List View Styles */
+.list-view {
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #d3d3d3; /* Light grey background */
+    -fx-control-inner-background: #d3d3d3; /* Light grey background */
+    -fx-cell-hover-color: #bfbfbf; /* Slightly darker grey for hover */
+    -fx-text-fill: #000000; /* Black text color */
+}
+
+.list-cell {
+    -fx-background-color: #d3d3d3; /* Light grey background */
+    -fx-text-fill: #000000; /* Black text color */
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #bfbfbf; /* Slightly darker grey for hover */
+}
+
+.list-cell:filled:focused {
+    -fx-background-color: #a9a9a9; /* Slightly darker grey for focused */
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: #233a77; /* Dark blue for selected item */
+    -fx-text-fill: #ffffff; /* White text color for selected item */
+}
+
+.list-cell:selected {
+    -fx-background-color: #233a77; /* Dark blue for selected item */
+    -fx-text-fill: #ffffff; /* White text color for selected item */
+}
+
+/* Text Area Styles */
+.text-area {
+    -fx-font-family: Calibri, sans-serif;
+    -fx-font-size: 14px;
+    -fx-control-inner-background: #ffffff; /* White background for text area */
+    -fx-text-fill: #000000; /* Black text color */
+}
+
+/* ScrollBar Styles */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button,
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #233a77; /* White thumb */
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 5, 3;
+}
+
+.scroll-bar .track {
+    -fx-background-color: grey; /* Darker blue track */
+    }
+
+.state-label {
+        -fx-font-family: Calibri, sans-serif;
+        -fx-font-size: 14px;
+        -fx-text-fill: #000000; /* Black text color */
+        -fx-alignment: center; /* Center the text */
+}
+}

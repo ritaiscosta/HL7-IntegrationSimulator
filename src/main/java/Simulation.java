@@ -8,15 +8,13 @@ public class Simulation {
     private List<Transition> transitions;
     private State startState;
     private State endState;
-    private Transition frequency;
-    private Transition probability;
+
 
     @JsonCreator
     public Simulation(
             @JsonProperty("name") String name,
             @JsonProperty("states") List<State> states,
             @JsonProperty("transitions") List<Transition> transitions,
-            @JsonProperty("events") List<String> events,
             @JsonProperty("startState") State startState,
             @JsonProperty("endState") State endState) {
         this.name = name;
@@ -24,8 +22,6 @@ public class Simulation {
         this.transitions = transitions;
         this.startState = startState;
         this.endState = endState;
-        this.frequency= frequency;
-        this.probability = probability;
     }
 
     public String getName() {
@@ -39,7 +35,6 @@ public class Simulation {
     public List<State> getStates() {
         return states;
     }
-
 
     public List<Transition> getTransitions() {
         return transitions;
@@ -61,19 +56,4 @@ public class Simulation {
         this.endState = endState;
     }
 
-    public Transition getFrequency() {
-        return frequency;
-    }
-
-    public Transition getProbability() {
-        return probability;
-    }
-
-    public void setFrequency(Transition frequency) {
-        this.frequency = frequency;
-    }
-
-    public void setProbability(Transition probability) {
-        this.probability = probability;
-    }
 }

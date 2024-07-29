@@ -1,148 +1,56 @@
 @startuml
 
 class Configuration {
-    -Scanner scanner
-    -String fileName
-    -ObjectMapper objectMapper
-    -List<Simulation> simulations
-    +getSimulations(): List<Simulation>
-    +generateSimulationCode(): String
-    +writeToJson(Configuration configuration, String fileName): void
-    +readFromJson(String fileName): Configuration
-    +selectConfigurationFiles(): List<String>
-    +updateJsonFile(Configuration configuration, String fileName): void
-}
+    }
 
 class Event {
-    -String eventName
-    -int eventID
-    -list<Event> availableEvents
-    +Event(String eventName, int eventID)
-    +getEventName(): String
-    +getEventID(): int
-    +getAvailableEvents(): List <Event>
-    +HL7EventMethodMapper: Map<String, String>
-    -getMethodName(String event) : event
-    -generateADT_A01Message(PersonInfo personInfo)
-    -generateADT_A02Message(PersonInfo personInfo)
-    -generateADT_A03Message(PersonInfo personInfo)
-    -generateORM_O01Message(PersonInfo personInfo)
-    -generateORU_R01Message(PersonInfo personInfo)
-    -populateCommonSegments(MSH msh, EVN evn, PID pid, PersonInfo personInfo)
-    -populateMSH(MSH msh)
-    -populateEVN(EVN evn)
-    -populatePID(PID pid, PersonInfo)
+    }
+
+class Main extends Application {
+
 }
 
-class Main {
-    -Scanner scanner
-    -List<Simulation> simulations
-    +main(String[] args): void
-    -displayMenu(): void
-    -createNewSimulation(): void
-    -isLoopDetected(List<Transition> transitions, State source, State target): boolean
-    -modifyExistingSimulation(Configuration config, List<String> files): void
-    -listExistingSimulations(): void
-    -startSimulation(): void
-    -selectSimulationForStateMachine Simulation: private
-    -runStateMachine(Simulation simulation): void
-    -exitProgram(): void
-    -getFrequency(String prompt): int
-    -getProbability(String prompt): double
-    -selectEventForTransition(String prompt): Event
-}
+class PatientInfo  {
+    }
 
 class Person {
-    -String id
-    -String firstName
-    -String lastName
-    +Person(String firstName, String lastName, String id)
-    +getId(): String
-    +getFirstName: String
-    +getLastName: String
-}
-
-class PatientInfo {
-    -Person person
-    -PatientInfo(String firstName, String lastName, String id)
-    +generatePatientInternalID(): String
-    +generateRandomFirstName(): String
-    +generateRandomLastName(): String
-    +generateRandomDOB(): String
-    +generateRandomSex(): String
-
-}
+    }
 
 class Simulation {
-    -String name
-    -List<State> states
-    -List<Transition> transitions
-    -List<String> events
-    +Simulation()
-    +getName(): String
-    +setName(): String name
-    +getStartState(): State
-    +setStartState(State startState): void
-    +getEndState(): State
-    +setEndState(State endState): void
-}
+    }
 
 class State {
-    -String name
-    -int maxCapacity
-    -int stateID
-    +State(String stateName, int maxCapacity)
-    +getName(): String
-    +setName(String name): void
-    +getMaxCapacity(): int
-    +setMaxCapacity(int maxCapacity): void
-    +getStateID(): int
-    +setStateID(int stateID): void
-    +StateIDGenerator()
-}
+    }
 
 class StateMachine {
-    -Simulation simulation
-    - Scanner scanner
-    - boolean returnToMainMenuFlag
-    +StateMachine(Simulation simulation, Scanner scanner)
-    +run(): void
-    +findStartTransition(): Transition
-    +executeStartTransition(Transition transition): void
-    +executeTransition(Transition transition): void
-    +generateHL7Message(String hl7Event, PatientInfo patientInfo): String
-    +cleanEventString(String event): String
-    +printStateQueues(): void
-    +promptToContinue(): void
-    +returnToMainMenu(): void
-    +allPeopleInEndState(): boolean
-    +getPossibleTransitions(): List<Transition>
 }
+
+class StateMachineVisualizer extends Application {
+   }
+
+class TimeSimulator {
+    }
 
 class Transition {
-    -State source
-    -State target
-    -Event event
-    -double probability
-    -int frequency
-    +Transition(State source, State target, Event event, double probability, int frequency)
-    +getEvent(): Event
-    +setEvent(Event event): void
-    +getSource(): State
-    +setSource(State source): void
-    +getTarget(): State
-    +setTarget(State target): void
-    +getProbability(): double
-    +setProbability(double probability): void
-    +getFrequency(): int
-    +setFrequency(int frequency): void
-}
+    }
 
-Configuration o-- Simulation
-State o-- Transition
-Transition o-- Event
-StateMachine o-- Simulation
+Configuration --> Simulation
+Simulation --> State
+Simulation --> Transition
+Transition --> State : source
+Transition --> State : target
+Transition --> Event
+State --> Person
+PatientInfo --> Person
+Main <-- Configuration
+Main <-- Simulation
+Main <-- State
+Main <-- Transition
+Main <-- Event
+Main <-- StateMachine
+Main <-- Person
 
-Person o-- PatientInfo
+TimeSimulator --> StateMachine
+StateMachine -- StateMachineVisualizer
 
 @enduml

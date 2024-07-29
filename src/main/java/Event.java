@@ -7,10 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Event {
 
@@ -30,7 +27,6 @@ public class Event {
     public Event(@JsonProperty("eventName") String eventName, @JsonProperty("eventID") int eventID) {
         this.eventName = eventName;
         this.eventID = eventID;
-
     }
 
     public String getEventName() {
@@ -41,12 +37,10 @@ public class Event {
         return eventID;
     }
 
-
     // Getter for available HL7 trigger events
     public static List<Event> getAvailableEvents() {
         return availableEvents;
     }
-
 
     public static class HL7EventMethodMapper {
         private static final Map<String, String> eventToMethodMap = new HashMap<>();
@@ -64,23 +58,26 @@ public class Event {
         }
     }
 
-    public String generateADT_A01Message(PatientInfo patientInfo) {
+    private static String generateUniqueControlID() {
+        return UUID.randomUUID().toString();
+    }
+
+    public String generateADT_A01Message(PatientInfo patientInfo, String timestamp) {
         HapiContext context = new DefaultHapiContext();
         try {
-            // Create a new ADT_A01 message (without Quickstart)
             ADT_A01 adt = new ADT_A01();
 
-            populateCommonSegments(adt.getMSH(), adt.getEVN(), adt.getPID(), patientInfo);
+            populateCommonSegments(adt.getMSH(), adt.getEVN(), adt.getPID(), patientInfo, timestamp);
             MSH msh = adt.getMSH();
             msh.getMessageType().getMessageCode().setValue("ADT");
             msh.getMessageType().getTriggerEvent().setValue("A01");
 
             PV1 pv1Segment = adt.getPV1();
-            pv1Segment.getSetIDPV1().setValue("1");
+            pv1Segment.getSetIDPV1().setValue(patientInfo.getId());
             pv1Segment.getPatientClass().setValue("I"); // Inpatient
             pv1Segment.getAssignedPatientLocation().getPointOfCare().setValue("ICU"); // Intensive Care Unit
             pv1Segment.getAdmissionType().setValue("EMER"); // Emergency
-            pv1Segment.getAdmitDateTime().getTime().setValue("20230526120000");
+            pv1Segment.getAdmitDateTime().getTime().setValue(timestamp);
 
             String messageA01 = adt.getMSH().encode() + "\n" +
                     adt.getPID().encode() + "\n" +
@@ -100,20 +97,21 @@ public class Event {
         }
     }
 
-    public String generateADT_A02Message(PatientInfo patientInfo) {
+    public String generateADT_A02Message(PatientInfo patientInfo, String timestamp) {
         HapiContext context = new DefaultHapiContext();
         try {
             ADT_A02 adt = new ADT_A02();
-            populateCommonSegments(adt.getMSH(), adt.getEVN(), adt.getPID(), patientInfo);
+            populateCommonSegments(adt.getMSH(), adt.getEVN(), adt.getPID(), patientInfo, timestamp);
             MSH msh = adt.getMSH();
             msh.getMessageType().getMessageCode().setValue("ADT");
             msh.getMessageType().getTriggerEvent().setValue("A02");
+
             PV1 pv1 = adt.getPV1();
             pv1.getPatientClass().setValue("I"); // Inpatient
             pv1.getAssignedPatientLocation().getPointOfCare().setValue("Ward1");
             pv1.getAdmissionType().setValue("E"); // Emergency
-            pv1.getAdmitDateTime().getTime().setValue("20230526120000");
-            pv1.getDischargeDateTime(0).getTime().setValue("20230526180000");
+            pv1.getAdmitDateTime().getTime().setValue(timestamp);
+            pv1.getDischargeDateTime(0).getTime().setValue(patientInfo.getDischargeDateTime());
 
             String messageA02 = adt.getMSH().encode() + "\n" +
                     adt.getPID().encode() + "\n" +
@@ -133,11 +131,11 @@ public class Event {
         }
     }
 
-    public String generateADT_A03Message(PatientInfo patientInfo) {
+    public String generateADT_A03Message(PatientInfo patientInfo, String timestamp) {
         HapiContext context = new DefaultHapiContext();
         try {
             ADT_A03 adt = new ADT_A03();
-            populateCommonSegments(adt.getMSH(), adt.getEVN(), adt.getPID(), patientInfo);
+            populateCommonSegments(adt.getMSH(), adt.getEVN(), adt.getPID(), patientInfo, timestamp);
             MSH msh = adt.getMSH();
             msh.getMessageType().getMessageCode().setValue("ADT");
             msh.getMessageType().getTriggerEvent().setValue("A03");
@@ -149,8 +147,8 @@ public class Event {
             pv1.getPatientClass().setValue("I"); // Inpatient
             pv1.getAssignedPatientLocation().getPointOfCare().setValue("Ward1");
             pv1.getAdmissionType().setValue("E"); // Emergency
-            pv1.getAdmitDateTime().getTime().setValue("20230526120000");
-            pv1.getDischargeDateTime(0).getTime().setValue("20230526180000");
+            pv1.getAdmitDateTime().getTime().setValue(timestamp);
+            pv1.getDischargeDateTime(0).getTime().setValue(patientInfo.getDischargeDateTime());
 
             String messageA03 = adt.getMSH().encode() + "\n" +
                     adt.getPID().encode() + "\n" +
@@ -170,25 +168,24 @@ public class Event {
         }
     }
 
-    public String generateORM_O01Message(PatientInfo patientInfo) {
+    public String generateORM_O01Message(PatientInfo patientInfo, String timestamp) {
         HapiContext context = new DefaultHapiContext();
         try {
             ORM_O01 orm = new ORM_O01();
 
             MSH msh = orm.getMSH();
-            populateMSH(msh);
+            populateMSH(msh, timestamp);
             msh.getMessageType().getMessageCode().setValue("ORM");
             msh.getMessageType().getTriggerEvent().setValue("O01");
 
             PID pid = orm.getPATIENT().getPID();
             populatePID(pid, patientInfo);
 
-
             PV1 pv1 = orm.getPATIENT().getPATIENT_VISIT().getPV1();
             pv1.getPatientClass().setValue("I"); // Inpatient
 
             ORC orc = orm.getORDER().getORC();
-            orc.getOrderControl().setValue("NW"); // New order
+            orc.getOrderControl().setValue("SC"); // New order
             orc.getPlacerOrderNumber().getEntityIdentifier().setValue("12345");
             orc.getFillerOrderNumber().getEntityIdentifier().setValue("54321");
 
@@ -197,10 +194,10 @@ public class Event {
             obr.getUniversalServiceIdentifier().getText().setValue("Test Description");
 
             String messageORM = orm.getMSH().encode() + "\n" +
-                    orm.getPATIENT().getPID() + "\n" +
-                    orm.getPATIENT().getPATIENT_VISIT().getPV1() + "\n" +
+                    orm.getPATIENT().getPID().encode() + "\n" +
+                    orm.getPATIENT().getPATIENT_VISIT().getPV1().encode() + "\n" +
                     orm.getORDER().getORC().encode() + "\n" +
-                    orm.getORDER().getORDER_DETAIL().getOBR();
+                    orm.getORDER().getORDER_DETAIL().getOBR().encode();
 
             return messageORM;
         } catch (Exception e) {
@@ -215,13 +212,13 @@ public class Event {
         }
     }
 
-    public String generateORU_R01Message(PatientInfo patientInfo) {
+    public String generateORU_R01Message(PatientInfo patientInfo, String timestamp) {
         HapiContext context = new DefaultHapiContext();
         try {
             ORU_R01 oru = new ORU_R01();
 
             MSH msh = oru.getMSH();
-            populateMSH(msh);
+            populateMSH(msh, timestamp);
             msh.getMessageType().getMessageCode().setValue("ORU");
             msh.getMessageType().getTriggerEvent().setValue("R01");
 
@@ -240,12 +237,11 @@ public class Event {
             obx.getValueType().setValue("TX");
             obx.getObservationIdentifier().getIdentifier().setValue("12345");
             obx.getObservationIdentifier().getText().setValue("Observation");
-            obx.getObservationValue(0).getData().parse("Observation Value");
+            obx.getObservationValue(0).getData().parse("Observation Value for testing");
 
             String messageORU = oru.getMSH().encode() + "\n" +
-                    oru.getPATIENT_RESULT().getPATIENT().getPID().encode() + "a\n" +
+                    oru.getPATIENT_RESULT().getPATIENT().getPID().encode() + "\n" +
                     oru.getPATIENT_RESULT().getORDER_OBSERVATION().getORC().encode() + "\n" +
-                    oru.getPATIENT_RESULT().getORDER_OBSERVATION().getOBR().encode() + "\n" +
                     oru.getPATIENT_RESULT().getORDER_OBSERVATION().getOBR().encode() + "\n" +
                     oru.getPATIENT_RESULT().getORDER_OBSERVATION().getOBSERVATION(0).getOBX().encode();
 
@@ -262,34 +258,44 @@ public class Event {
         }
     }
 
-    private void populateCommonSegments(MSH msh, EVN evn, PID pid, PatientInfo patientInfo) throws DataTypeException {
-        populateMSH(msh);
-        populateEVN(evn);
+    private void populateCommonSegments(MSH msh, EVN evn, PID pid, PatientInfo patientInfo, String timestamp) throws DataTypeException {
+        populateMSH(msh, timestamp);
+        populateEVN(evn, timestamp);
         populatePID(pid, patientInfo);
     }
 
-    private void populateMSH(MSH msh) throws DataTypeException {
+    private void populateMSH(MSH msh, String timestamp) throws DataTypeException {
         msh.getFieldSeparator().setValue("|");
         msh.getEncodingCharacters().setValue("^~\\&");
-        msh.getSendingApplication().getNamespaceID().setValue("TestSendingSystem");
-        msh.getSendingFacility().getNamespaceID().setValue("TestSendingFacility");
-        msh.getReceivingApplication().getNamespaceID().setValue("TestReceivingSystem");
-        msh.getReceivingFacility().getNamespaceID().setValue("TestReceivingFacility");
-        msh.getDateTimeOfMessage().getTime().setValue("20230526120000");
-        msh.getMessageControlID().setValue("12345");
+        msh.getSendingApplication().getNamespaceID().setValue("SendingSystem");
+        msh.getSendingFacility().getNamespaceID().setValue("SendingFacility");
+        msh.getReceivingApplication().getNamespaceID().setValue("ReceivingSystem");
+        msh.getReceivingFacility().getNamespaceID().setValue("ReceivingFacility");
+        msh.getDateTimeOfMessage().getTime().setValue(timestamp);
+        msh.getMessageControlID().setValue(generateUniqueControlID());
         msh.getProcessingID().getProcessingID().setValue("P");
         msh.getVersionID().getVersionID().setValue("2.5.1");
     }
 
-    private void populateEVN(EVN evn) throws DataTypeException {
-        evn.getRecordedDateTime().getTime().setValue("20230526120000");
+    private void populateEVN(EVN evn, String timestamp) throws DataTypeException {
+        evn.getRecordedDateTime().getTime().setValue(timestamp);
     }
 
     private void populatePID(PID pid, PatientInfo patientInfo) throws DataTypeException {
         pid.getPatientID().getIDNumber().setValue(patientInfo.getId());
         pid.getPatientName(0).getFamilyName().getSurname().setValue(patientInfo.getLastName());
         pid.getPatientName(0).getGivenName().setValue(patientInfo.getFirstName());
-        pid.getDateTimeOfBirth().getTime().setValue(patientInfo.generateRandomDOB());
-        pid.getAdministrativeSex().setValue(patientInfo.generateRandomSex());
+        pid.getDateTimeOfBirth().getTime().setValue(patientInfo.getDOB());
+        pid.getAdministrativeSex().setValue(patientInfo.getSex());
+        pid.getPatientAddress(0).getStreetAddress().getStreetOrMailingAddress().setValue(patientInfo.getStreet());
+        pid.getPatientAddress(0).getCity().setValue(patientInfo.getCity());
+        pid.getPhoneNumberHome(0).getTelephoneNumber().setValue(patientInfo.getPhoneNumber());
+        pid.getPatientAddress(0).getCountry().setValue(patientInfo.getCountry());
+    }
+
+    @Override
+    public String toString() {
+        
+        return eventName;
     }
 }
